@@ -7,19 +7,19 @@
 # ==================================================================
 
 # Script to generate, clear, and run compiler test suites
-# Usage: ./test.sh {lexer|parser|ast|checker|clean}
+# Usage: ./test.sh {lexer|parser|ast|semantic|clean}
 
 # Validate argument count
 if [ "$#" -ne 1 ]; then
     echo "Error: Invalid number of arguments"
-    echo "Usage: $0 {lexer|parser|ast|checker|clean}"
+    echo "Usage: $0 {lexer|parser|ast|semantic|clean}"
     echo ""
     echo "Operations:"
-    echo "  lexer   - Run lexical analysis test suite"
-    echo "  parser  - Run syntax analysis test suite"
-    echo "  ast     - Run abstract syntax tree generation tests"
-    echo "  checker - Run semantic analysis tests"
-    echo "  clean   - Remove all test artifacts"
+    echo "  lexer    - Run lexical analysis test suite"
+    echo "  parser   - Run syntax analysis test suite"
+    echo "  ast      - Run abstract syntax tree generation tests"
+    echo "  semantic - Run semantic analysis tests"
+    echo "  clean    - Remove all test artifacts"
     exit 1
 fi
 
@@ -53,7 +53,7 @@ case "$1" in
         echo "Running AST generation tests..."
         python main.py test ASTGenSuite
         ;;
-    checker)
+    semantic)
         # Generate and execute semantic analysis tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
@@ -72,14 +72,14 @@ case "$1" in
     *)
         # Handle invalid arguments
         echo "Error: Invalid argument '$1'"
-        echo "Usage: $0 {lexer|parser|ast|checker|clean}"
+        echo "Usage: $0 {lexer|parser|ast|semantic|clean}"
         echo ""
         echo "Operations:"
-        echo "  lexer   - Run lexical analysis test suite"
-        echo "  parser  - Run syntax analysis test suite"
-        echo "  ast     - Run abstract syntax tree generation tests"
-        echo "  checker - Run semantic analysis tests"
-        echo "  clean   - Remove all test artifacts"
+        echo "  lexer    - Run lexical analysis test suite"
+        echo "  parser   - Run syntax analysis test suite"
+        echo "  ast      - Run abstract syntax tree generation tests"
+        echo "  semantic - Run semantic analysis tests"
+        echo "  clean    - Remove all test artifacts"
         exit 1
         ;;
 esac
