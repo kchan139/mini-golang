@@ -1,0 +1,42 @@
+name: MiniGo CI
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest coverage antlr4-python3-runtime==4.9.2
+        pip install -e .
+    
+    - name: Download ANTLR JAR
+      run: |
+        curl -O https://www.antlr.org/download/antlr-4.9.2-complete.jar
+        
+    - name: Run unit tests with coverage
+      run: |
+        export ANTLR_JAR="$(pwd)/MiniGo/src/antlr-4.9.2-complete.jar"
+        cd "Assignment 4/src"
+        python main.py gen
+        coverage run main.py test LexerSuite
+        coverage run main.py test ParserSuite
+        coverage run main.py test ASTGenSuite
+        coverage run main.py test CheckSuite
+        coverage xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: success()
