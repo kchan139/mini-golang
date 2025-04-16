@@ -30,19 +30,27 @@ def main(argv):
         elif argv[1] == 'LexerSuite':
             from LexerSuite import LexerSuite
             suite = unittest.TestLoader().loadTestsFromTestCase(LexerSuite)
-            test(suite)
+            success = test(suite)
+            if not success:
+                sys.exit(1)
         elif argv[1] == 'ParserSuite':
             from ParserSuite import ParserSuite
             suite = unittest.TestLoader().loadTestsFromTestCase(ParserSuite)
-            test(suite)
+            success = test(suite)
+            if not success:
+                sys.exit(1)
         elif argv[1] == 'ASTGenSuite':
             from ASTGenSuite import ASTGenSuite
             suite = unittest.TestLoader().loadTestsFromTestCase(ASTGenSuite)
-            test(suite)
+            success = test(suite)
+            if not success:
+                sys.exit(1)
         elif argv[1] == 'CheckSuite':
             from CheckSuite import CheckSuite
             suite = unittest.TestLoader().loadTestsFromTestCase(CheckSuite)
-            test(suite)
+            success = test(suite)
+            if not success:
+                sys.exit(1)
         else:
             printUsage()
     else:
@@ -56,10 +64,28 @@ def test(suite):
     runner = unittest.TextTestRunner(stream=stream)
     result = runner.run(suite)
     print('Tests run ', result.testsRun)
-    print('Errors ', result.errors)
-    pprint(result.failures)
+    print('Errors ', len(result.errors))
+    print('Failures ', len(result.failures))
+    
+    # Print out error details
+    if result.errors:
+        print("\n===== ERRORS =====")
+        for i, (test, error) in enumerate(result.errors):
+            print(f"\nError {i+1}: {test}")
+            print(error)
+    
+    # Print out failure details
+    if result.failures:
+        print("\n===== FAILURES =====")
+        for i, (test, failure) in enumerate(result.failures):
+            print(f"\nFailure {i+1}: {test}")
+            print(failure)
+    
     stream.seek(0)
     print('Test output\n', stream.read())
+    
+    # Return success status to caller
+    return result.wasSuccessful()
 
 def printUsage():
     print("python3 run.py gen")
