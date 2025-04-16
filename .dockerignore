@@ -1,0 +1,24 @@
+# Exclude Python bytecode and cache files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Exclude docs directories
+**/docs/
+
+# Exclude the build output folder
+target/
+
+# Exclude test output directories (if generated during testing)
+**/output/
+
+# Exclude virtual environment directories (if any)
+env/
+venv/
+
+# Exclude OS-specific files
+.DS_Store
+
+# Exclude .git files
+.git
+.gitignore

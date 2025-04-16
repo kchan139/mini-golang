@@ -1,0 +1,8 @@
+services:
+  minigo:
+    build: .
+    image: minigo
+    volumes:
+      - .:/app
+    working_dir: /app
+    tty: true
