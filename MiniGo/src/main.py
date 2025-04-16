@@ -1,5 +1,10 @@
 import sys,os,traceback
 sys.path.append('./test/')
+sys.path.append('./main/minigo/parser/')
+sys.path.append('./main/minigo/utils/')
+sys.path.append('./main/minigo/astgen/')
+sys.path.append('./main/minigo/checker/')
+sys.path.append('./main/minigo/codegen/')
 import subprocess
 import unittest
 from antlr4 import *
@@ -51,6 +56,12 @@ def main(argv):
             success = test(suite)
             if not success:
                 sys.exit(1)
+        elif argv[1] == 'CodeGenSuite':
+            from CodeGenSuite import CheckCodeGenSuite
+            suite = unittest.TestLoader().loadTestsFromTestCase(CheckCodeGenSuite)
+            success = test(suite)
+            if not success:
+                sys.exit(1)
         else:
             printUsage()
     else:
@@ -93,6 +104,7 @@ def printUsage():
     print("python3 run.py test ParserSuite")
     print("python3 run.py test ASTGenSuite")
     print("python3 run.py test CheckSuite")
+    print("python3 run.py test CodeGenSuite")
 
 if __name__ == "__main__":
    main(sys.argv[1:])
