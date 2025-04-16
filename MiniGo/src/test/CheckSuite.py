@@ -8,7 +8,7 @@ class CheckSuite(unittest.TestCase):
             const CHEESE = 1; 
             const CHEESE = 2;        
         """
-        expect = "Redeclared Constant: CHEESE\n"
+        expect = "Redeclared Constant: CHEESE"
         self.assertTrue(TestChecker.test(input, expect, 301))
 
     def test_302(self):
@@ -16,7 +16,7 @@ class CheckSuite(unittest.TestCase):
             var Cheese = 1; 
             const Cheese = 2;
         """
-        expect = "Redeclared Constant: Cheese\n"
+        expect = "Redeclared Constant: Cheese"
         self.assertTrue(TestChecker.test(input, expect, 302))
     
     def test_303(self):
@@ -24,7 +24,7 @@ class CheckSuite(unittest.TestCase):
             const CHEESE = 1; 
             var CHEESE = 2;
         """
-        expect = "Redeclared Variable: CHEESE\n"
+        expect = "Redeclared Variable: CHEESE"
         self.assertTrue(TestChecker.test(input, expect, 303))
 
     def test_304(self):
@@ -32,7 +32,7 @@ class CheckSuite(unittest.TestCase):
             const CHEESE = 1; 
             func CHEESE () {return;}
         """
-        expect = "Redeclared Function: CHEESE\n"
+        expect = "Redeclared Function: CHEESE"
         self.assertTrue(TestChecker.test(input, expect, 304))
 
     def test_305(self):
@@ -40,14 +40,14 @@ class CheckSuite(unittest.TestCase):
             func Cheese () {return;}
             var Cheese = 1;
         """
-        expect = "Redeclared Variable: Cheese\n"
+        expect = "Redeclared Variable: Cheese"
         self.assertTrue(TestChecker.test(input, expect, 305))
 
     def test_306(self):
         input = """
             var getInt = 1;
         """
-        expect = "Redeclared Variable: getInt\n"
+        expect = "Redeclared Variable: getInt"
         self.assertTrue(TestChecker.test(input, expect, 306))
 
     def test_307(self):
@@ -61,7 +61,7 @@ class CheckSuite(unittest.TestCase):
                 CHEESE float;
             }
         """
-        expect = "Redeclared Field: CHEESE\n"
+        expect = "Redeclared Field: CHEESE"
         self.assertTrue(TestChecker.test(input, expect, 307))
 
     def test_308(self):
@@ -73,7 +73,7 @@ class CheckSuite(unittest.TestCase):
                 Dih int;
             }
         """
-        expect = "Redeclared Method: getInt\n"
+        expect = "Redeclared Method: getInt"
         self.assertTrue(TestChecker.test(input, expect, 308))
 
     def test_309(self):
@@ -83,14 +83,14 @@ class CheckSuite(unittest.TestCase):
                 Cheese (aura int);
             }
         """
-        expect = "Redeclared Prototype: Cheese\n"
+        expect = "Redeclared Prototype: Cheese"
         self.assertTrue(TestChecker.test(input, expect, 309))
 
     def test_310(self):
         input = """
             func Cheese (aura, aura int) {return;}
         """
-        expect = "Redeclared Parameter: aura\n"
+        expect = "Redeclared Parameter: aura"
         self.assertTrue(TestChecker.test(input, expect, 310))
 
     def test_311(self):
@@ -101,7 +101,7 @@ class CheckSuite(unittest.TestCase):
                 const farming = 1;
             }
         """
-        expect = "Redeclared Constant: farming\n"
+        expect = "Redeclared Constant: farming"
         self.assertTrue(TestChecker.test(input, expect, 311))
 
     def test_312(self):
@@ -112,7 +112,7 @@ class CheckSuite(unittest.TestCase):
                 }
             }  
         """
-        expect = "Redeclared Constant: aura\n"
+        expect = "Redeclared Constant: aura"
         self.assertTrue(TestChecker.test(input, expect, 312))
 
     def test_313(self):
@@ -121,7 +121,7 @@ class CheckSuite(unittest.TestCase):
             var flex = rizz;
             var chad = dih;
         """
-        expect = "Undeclared Identifier: dih\n"
+        expect = "Undeclared Identifier: dih"
         self.assertTrue(TestChecker.test(input, expect, 313))
 
     def test_314(self):
@@ -134,7 +134,7 @@ class CheckSuite(unittest.TestCase):
                 return;
             }
         """
-        expect = "Undeclared Function: poop_cheese\n"
+        expect = "Undeclared Function: poop_cheese"
         self.assertTrue(TestChecker.test(input, expect, 314))
 
     def test_315(self):
@@ -148,7 +148,7 @@ class CheckSuite(unittest.TestCase):
                 var dih = yap.Chi;
             }
         """
-        expect = "Undeclared Field: Chi\n"
+        expect = "Undeclared Field: Chi"
         self.assertTrue(TestChecker.test(input, expect, 315))
 
     def test_316(self):
@@ -162,7 +162,7 @@ class CheckSuite(unittest.TestCase):
                 yap.putInt ();
             }
         """
-        expect = "Undeclared Method: putInt\n"
+        expect = "Undeclared Method: putInt"
         self.assertTrue(TestChecker.test(input, expect, 316))
 
     def test_317(self):
@@ -170,7 +170,7 @@ class CheckSuite(unittest.TestCase):
             type CHEESE struct {Cheese int;}
             type CHEESE struct {v int;}
         """
-        expect = "Redeclared Type: CHEESE\n"
+        expect = "Redeclared Type: CHEESE"
         self.assertTrue(TestChecker.test(input, expect, 317))
 
     def test_318(self):
@@ -180,22 +180,22 @@ class CheckSuite(unittest.TestCase):
                 bruh int;
             }
         """
-        expect = "Redeclared Type: aura\n"
+        expect = "Redeclared Type: aura"
         self.assertTrue(TestChecker.test(input, expect, 318))
 
     def test_319(self):
         input = """var aura int; var bruh int; var aura int; """
-        expect = "Redeclared Variable: aura\n"
+        expect = "Redeclared Variable: aura"
         self.assertTrue(TestChecker.test(input, expect, 319))
 
     def test_320(self):
         input = """var aura int = 1.2;"""
-        expect = "Type Mismatch: VarDecl(aura,IntType,FloatLiteral(1.2))\n"
+        expect = "Type Mismatch: VarDecl(aura,IntType,FloatLiteral(1.2))"
         self.assertTrue(TestChecker.test(input, expect, 320))
 
     def test_321(self):
         input = Program([VarDecl("aura",IntType(),Id("bruh"))])
-        expect = "Undeclared Identifier: bruh\n"
+        expect = "Undeclared Identifier: bruh"
         self.assertTrue(TestChecker.test(input, expect, 321))
 
     def test_322(self):
@@ -217,7 +217,7 @@ class CheckSuite(unittest.TestCase):
         """
         input = Program([FuncDecl("Cheese",[ParamDecl("b",IntType())],VoidType(),Block([ForStep(VarDecl("a", None,IntLiteral(1)),BinaryOp("<", Id("a"), IntLiteral(1)),Assign(Id("a"),BinaryOp("+", Id("a"), IntLiteral(1))),Block([ConstDecl("a",None,IntLiteral(2))]))]))])
 
-        self.assertTrue(TestChecker.test(input, "Redeclared Constant: a\n", 323))
+        self.assertTrue(TestChecker.test(input, "Redeclared Constant: a", 323))
 
     def test_324(self):
         input =  """
@@ -230,7 +230,7 @@ class CheckSuite(unittest.TestCase):
         input = Program([ConstDecl("a",None,IntLiteral(2)),FuncDecl("poop",[],VoidType(),Block([ConstDecl("a",None,IntLiteral(1)),ForBasic(BinaryOp("<", Id("a"), IntLiteral(1)),Block([ConstDecl("a",None,IntLiteral(1)),ForBasic(BinaryOp("<", Id("a"), IntLiteral(1)),Block([ConstDecl("a",None,IntLiteral(1)),ConstDecl("b",None,IntLiteral(1))])),ConstDecl("b",None,IntLiteral(1)),VarDecl("a", None,IntLiteral(1))]))]))])
 
 
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: a\n", 324))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: a", 324))
 
     def test_325(self):
         input =  """
@@ -247,7 +247,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = b;
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),StructType("Smol",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),InterfaceType("Amongus",[Prototype("Cheese",[],VoidType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("cheese",[],VoidType(),Block([Return(None)]))),VarDecl("a",Id("Skibidi"), None),VarDecl("b",Id("Smol"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("b"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Toilet),Id(a))\n", 325))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Toilet),Id(a))", 325))
 
     def test_326(self):
         input =  """
@@ -264,7 +264,7 @@ class CheckSuite(unittest.TestCase):
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),StructType("Smol",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),InterfaceType("Amongus",[Prototype("Cheese",[],IntType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("cheese",[],VoidType(),Block([Return(None)]))),VarDecl("a",Id("Skibidi"), None),VarDecl("b",Id("Smol"), None),VarDecl("c",Id("Amongus"),Id("a"))])
 
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Amongus),Id(a))\n", 326))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Amongus),Id(a))", 326))
 
     def test_327(self):
         input =  """
@@ -281,7 +281,7 @@ class CheckSuite(unittest.TestCase):
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),StructType("Smol",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],Id("Skibidi"))]),InterfaceType("Amongus",[Prototype("Cheese",[],Id("Smol"))]),MethodDecl("s",Id("Skibidi"),FuncDecl("cheese",[],Id("Skibidi"),Block([Return(Id("s"))]))),VarDecl("a",Id("Skibidi"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("a"))])
 
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Toilet),Id(a))\n", 327))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Toilet),Id(a))", 327))
 
     def test_328(self):
         input =  """
@@ -297,7 +297,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = a;
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),StructType("Smol",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[IntType(),IntType()],Id("Skibidi"))]),InterfaceType("Amongus",[Prototype("Cheese",[IntType(),FloatType()],Id("Skibidi"))]),MethodDecl("s",Id("Skibidi"),FuncDecl("cheese",[ParamDecl("a",IntType()),ParamDecl("b",IntType())],Id("Skibidi"),Block([Return(Id("s"))]))),VarDecl("a",Id("Skibidi"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("a"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Toilet),Id(a))\n", 328))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Toilet),Id(a))", 328))
 
     def test_329(self):
         input =  """
@@ -309,7 +309,7 @@ class CheckSuite(unittest.TestCase):
         """
         input = Program([StructType("Skibidi",[("v",IntType()),("t",IntType())],[]),VarDecl("a", None,StructLiteral("Skibidi",[("v",IntLiteral(1)),("t",IntLiteral(2))])),VarDecl("b",Id("Skibidi"),Id("a")),VarDecl("c",IntType(),Id("b"))])
 
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,IntType,Id(b))\n", 329))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,IntType,Id(b))", 329))
 
     def test_330(self):
         input =  """
@@ -327,7 +327,7 @@ class CheckSuite(unittest.TestCase):
             var d [1] string = b;
         """
         input = Program([VarDecl("a",ArrayType([IntLiteral(2),IntLiteral(3)],IntType()), None),VarDecl("b", None,ArrayCell(Id("a"),[IntLiteral(1),IntLiteral(2)])),VarDecl("c",IntType(),Id("b")),VarDecl("d",ArrayType([IntLiteral(1)],StringType()),Id("b"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,ArrayType(StringType,[IntLiteral(1)]),Id(b))\n", 331))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,ArrayType(StringType,[IntLiteral(1)]),Id(b))", 331))
 
     def test_332(self):
         input =  """
@@ -344,7 +344,7 @@ class CheckSuite(unittest.TestCase):
             var e int = nil;
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),VarDecl("a",Id("Toilet"), None),VarDecl("c",Id("Toilet"),NilLiteral()),VarDecl("d",Id("Skibidi"),NilLiteral()),FuncDecl("poop",[],VoidType(),Block([Assign(Id("c"),Id("a")),Assign(Id("a"),NilLiteral())])),VarDecl("e",IntType(),NilLiteral())])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,IntType,Nil)\n", 332))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,IntType,Nil)", 332))
     
     def test_333(self):
         input =  """
@@ -353,7 +353,7 @@ class CheckSuite(unittest.TestCase):
             var c = - true;
         """
         input = Program([VarDecl("a", None,UnaryOp("-",IntLiteral(1))),VarDecl("b", None,UnaryOp("-",FloatLiteral(1.02))),VarDecl("c", None,UnaryOp("-",BooleanLiteral(True)))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: UnaryOp(-,BooleanLiteral(true))\n", 333))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: UnaryOp(-,BooleanLiteral(true))", 333))
 
     def test_334(self):
         input =  """
@@ -391,7 +391,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([StructType("CHEESE",[("a",ArrayType([IntLiteral(2)],IntType()))],[]),InterfaceType("VO",[Prototype("poop",[],IntType())]),MethodDecl("v",Id("CHEESE"),FuncDecl("poop",[],IntType(),Block([Return(IntLiteral(1))]))),FuncDecl("poop",[],VoidType(),Block([VarDecl("b",Id("VO"),StructLiteral("CHEESE",[("a",ArrayLiteral([IntLiteral(2)],IntType(),[IntLiteral(1),IntLiteral(2)]))])),VarDecl("a",Id("CHEESE"),Id("b"))]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(a,Id(CHEESE),Id(b))\n", 335))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(a,Id(CHEESE),Id(b))", 335))
 
     def test_336(self):
         input =  """
@@ -420,7 +420,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([VarDecl("a",Id("CHEESE"), None),FuncDecl("poop",[],Id("CHEESE"),Block([Return(Id("a")),Return(Id("CHEESE"))])),StructType("CHEESE",[("CHEESE",IntType())],[])])
-        self.assertTrue(TestChecker.test(input, "Undeclared Identifier: CHEESE\n", 337))
+        self.assertTrue(TestChecker.test(input, "Undeclared Identifier: CHEESE", 337))
 
     def test_338(self):
         input =  """
@@ -504,7 +504,7 @@ class CheckSuite(unittest.TestCase):
                 }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([ConstDecl("a",None,IntLiteral(1)),ForEach(Id("a"),Id("b"),ArrayLiteral([IntLiteral(3)],IntType(),[IntLiteral(1),IntLiteral(2),IntLiteral(3)]),Block([VarDecl("b", None,IntLiteral(1))]))]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: b\n", 344))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: b", 344))
 
     def test_345(self):
         input =  """
@@ -513,7 +513,7 @@ class CheckSuite(unittest.TestCase):
             var c = - true;
         """
         input = Program([VarDecl("a", None,UnaryOp("-",IntLiteral(1))),VarDecl("b", None,UnaryOp("-",FloatLiteral(1.02))),VarDecl("c", None,UnaryOp("-",BooleanLiteral(True)))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: UnaryOp(-,BooleanLiteral(true))\n", 345))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: UnaryOp(-,BooleanLiteral(true))", 345))
 
     def test_346(self):
         input =  """
@@ -533,7 +533,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([Assign(Id("a"),IntLiteral(1)),VarDecl("a", None,IntLiteral(1))]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: a\n", 347))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: a", 347))
 
     def test_348(self):
         input =  """
@@ -542,7 +542,7 @@ class CheckSuite(unittest.TestCase):
             func (s STRUCT) poop(x [a] int) [a] int {return s.x;}
         """
         input = Program([ConstDecl("a",None,IntLiteral(2)),StructType("STRUCT",[("x",ArrayType([Id("a")],IntType()))],[]),MethodDecl("s",Id("STRUCT"),FuncDecl("poop",[ParamDecl("x",ArrayType([Id("a")],IntType()))],ArrayType([Id("a")],IntType()),Block([Return(FieldAccess(Id("s"),"x"))]))),FuncDecl("poop",[ParamDecl("x",ArrayType([Id("a")],IntType()))],ArrayType([Id("a")],IntType()),Block([ConstDecl("a",None,IntLiteral(3)),Return(ArrayLiteral([Id("a")],IntType(),[IntLiteral(1),IntLiteral(2)]))]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: Return(ArrayLiteral([Id(a)],IntType,[IntLiteral(1),IntLiteral(2)]))\n", 348))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: Return(ArrayLiteral([Id(a)],IntType,[IntLiteral(1),IntLiteral(2)]))", 348))
 
     def test_349(self):
         input =  """
@@ -573,7 +573,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([ForStep(VarDecl("i",IntType(),IntLiteral(1)),BinaryOp("<", Id("a"), IntLiteral(10)),Assign(Id("i"),FloatLiteral(1.0)),Block([VarDecl("a", None,IntLiteral(1))]))]))])
-        self.assertTrue(TestChecker.test(input, "Undeclared Identifier: a\n", 350))
+        self.assertTrue(TestChecker.test(input, "Undeclared Identifier: a", 350))
 
 
     def test_351(self):
@@ -583,7 +583,7 @@ class CheckSuite(unittest.TestCase):
             var sigma int;
         """
         input = Program([VarDecl("sigma",IntType(),None),VarDecl("gyatt",FloatType(),None),VarDecl("sigma",IntType(),None)])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: sigma\n", 351))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: sigma", 351))
 
 
     def test_352(self):
@@ -595,7 +595,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("Cheese",[ParamDecl("b",IntType())],VoidType(),Block([ForStep(VarDecl("a", None,IntLiteral(1)),BinaryOp("<", Id("cok"), IntLiteral(1)),Assign(Id("a"),BinaryOp("+", Id("a"), Id("cok"))),Block([ConstDecl("cok",None,IntLiteral(2))]))]))])
-        self.assertTrue(TestChecker.test(input, """Undeclared Identifier: cok\n""", 352))
+        self.assertTrue(TestChecker.test(input, """Undeclared Identifier: cok""", 352))
 
     def test_353(self):
         input="""
@@ -622,7 +622,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([ConstDecl("a",None,IntLiteral(2)),StructType("STRUCT",[("x",ArrayType([Id("a")],IntType()))],[]),MethodDecl("s",Id("STRUCT"),FuncDecl("poop",[ParamDecl("x",ArrayType([Id("a")],IntType()))],ArrayType([Id("a")],IntType()),Block([Return(FieldAccess(Id("s"),"x"))]))),FuncDecl("poop",[ParamDecl("x",ArrayType([Id("a")],IntType()))],ArrayType([Id("a")],IntType()),Block([ConstDecl("a",None,IntLiteral(3)),Return(ArrayLiteral([Id("a")],IntType(),[IntLiteral(1),IntLiteral(2)]))]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: Return(ArrayLiteral([Id(a)],IntType,[IntLiteral(1),IntLiteral(2)]))\n", 354))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: Return(ArrayLiteral([Id(a)],IntType,[IntLiteral(1),IntLiteral(2)]))", 354))
 
     def test_355(self):
         """
@@ -630,7 +630,7 @@ class CheckSuite(unittest.TestCase):
             var Cheese = 2;
         """
         input = Program([VarDecl("Cheese", None,IntLiteral(1)),VarDecl("Cheese", None,IntLiteral(2))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: Cheese\n", 355))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: Cheese", 355))
 
     def test_356(self):
         """
@@ -638,7 +638,7 @@ class CheckSuite(unittest.TestCase):
             const Cheese = 2;
         """
         input = Program([VarDecl("Cheese", None,IntLiteral(1)),ConstDecl("Cheese",None,IntLiteral(2))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Constant: Cheese\n", 356))
+        self.assertTrue(TestChecker.test(input, "Redeclared Constant: Cheese", 356))
         
     def test_357(self):
         """
@@ -646,7 +646,7 @@ class CheckSuite(unittest.TestCase):
             var Cheese = 2;
         """
         input = Program([ConstDecl("Cheese",None,IntLiteral(1)),VarDecl("Cheese", None,IntLiteral(2))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: Cheese\n", 357))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: Cheese", 357))
 
     def test_358(self):
         """
@@ -654,7 +654,7 @@ class CheckSuite(unittest.TestCase):
             var Cheese = 1;
         """
         input = Program([FuncDecl("Cheese",[],VoidType(),Block([Return(None)])),VarDecl("Cheese", None,IntLiteral(1))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: Cheese\n", 358))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: Cheese", 358))
         
     def test_359(self):
         """
@@ -666,7 +666,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([MethodDecl("v",Id("CHEESE"),FuncDecl("putIntLn",[],VoidType(),Block([Return(None)]))),MethodDecl("v",Id("CHEESE"),FuncDecl("getInt",[],VoidType(),Block([Return(None)]))),MethodDecl("v",Id("CHEESE"),FuncDecl("getInt",[],VoidType(),Block([Return(None)]))),StructType("CHEESE",[("Cheese",IntType())],[])])
-        self.assertTrue(TestChecker.test(input, "Redeclared Method: getInt\n", 359))
+        self.assertTrue(TestChecker.test(input, "Redeclared Method: getInt", 359))
     
     def test_360(self):
         """
@@ -677,7 +677,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("Cheese",[ParamDecl("b",IntType())],VoidType(),Block([ForStep(VarDecl("a", None,IntLiteral(1)),BinaryOp("<", Id("a"), IntLiteral(1)),Assign(Id("a"),BinaryOp("+", Id("a"), IntLiteral(1))),Block([ConstDecl("a",None,IntLiteral(2))]))]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Constant: a\n", 360))
+        self.assertTrue(TestChecker.test(input, "Redeclared Constant: a", 360))
         
     def test_361(self):
         """
@@ -690,7 +690,7 @@ class CheckSuite(unittest.TestCase):
                 v.putInt ();
         """
         input = Program([StructType("CHEESE",[("Cheese",IntType())],[]),MethodDecl("v",Id("CHEESE"),FuncDecl("getInt",[],VoidType(),Block([MethCall(Id("v"),"getInt",[]),MethCall(Id("v"),"putInt",[])])))])
-        self.assertTrue(TestChecker.test(input, "Undeclared Method: putInt\n", 361))
+        self.assertTrue(TestChecker.test(input, "Undeclared Method: putInt", 361))
     
     def test_362(self):
         """
@@ -698,7 +698,7 @@ class CheckSuite(unittest.TestCase):
             func poop() {return;}
         """
         input = Program([VarDecl("poop", None,IntLiteral(1)),FuncDecl("poop",[],VoidType(),Block([Return(None)]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Function: poop\n", 362))
+        self.assertTrue(TestChecker.test(input, "Redeclared Function: poop", 362))
 
     def test_363(self):
         """
@@ -723,7 +723,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([ConstDecl("a",None,IntLiteral(2)),FuncDecl("poop",[],VoidType(),Block([ConstDecl("a",None,IntLiteral(1)),ForStep(VarDecl("a", None,IntLiteral(1)),BinaryOp("<", Id("a"), IntLiteral(1)),Assign(Id("b"),IntLiteral(2)),Block([ConstDecl("b",None,IntLiteral(1))]))]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Constant: b\n", 364))
+        self.assertTrue(TestChecker.test(input, "Redeclared Constant: b", 364))
         
     def test_365(self):
         """
@@ -738,7 +738,7 @@ class CheckSuite(unittest.TestCase):
             const d = v.zoo();
         """
         input = Program([VarDecl("v",Id("CHEESE"), None),ConstDecl("b",None,MethCall(Id("v"),"poop",[])),StructType("CHEESE",[("a",IntType())],[]),MethodDecl("v",Id("CHEESE"),FuncDecl("poop",[],IntType(),Block([Return(IntLiteral(1))]))),MethodDecl("v",Id("CHEESE"),FuncDecl("koo",[],IntType(),Block([Return(IntLiteral(1))]))),ConstDecl("c",None,MethCall(Id("v"),"koo",[])),ConstDecl("d",None,MethCall(Id("v"),"zoo",[]))])
-        self.assertTrue(TestChecker.test(input, "Undeclared Method: zoo\n", 365))
+        self.assertTrue(TestChecker.test(input, "Undeclared Method: zoo", 365))
         
     def test_366(self):
         """
@@ -758,7 +758,7 @@ class CheckSuite(unittest.TestCase):
             var k Smol = x;
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),StructType("Smol",[("Cheese",IntType())],[]),VarDecl("v",Id("Skibidi"), None),ConstDecl("x",None,Id("v")),VarDecl("z",Id("Skibidi"),Id("x")),VarDecl("k",Id("Smol"),Id("x"))])
-        output = """Type Mismatch: VarDecl(k,Id(Smol),Id(x))\n"""
+        output = """Type Mismatch: VarDecl(k,Id(Smol),Id(x))"""
         self.assertTrue(TestChecker.test(input, output, 367))
         
     def test_368(self):
@@ -776,7 +776,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = b;
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),StructType("Smol",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese1",[],VoidType())]),InterfaceType("Amongus",[Prototype("Cheese1",[],VoidType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese1",[],VoidType(),Block([Return(None)]))),VarDecl("a",Id("Skibidi"), None),VarDecl("b",Id("Smol"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("b"))])
-        output = """Type Mismatch: VarDecl(d,Id(Amongus),Id(b))\n"""
+        output = """Type Mismatch: VarDecl(d,Id(Amongus),Id(b))"""
         self.assertTrue(TestChecker.test(input, output, 368))
         
     def test_369(self):
@@ -793,7 +793,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = a;
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),StructType("Smol",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese1",[],Id("Skibidi"))]),InterfaceType("Amongus",[Prototype("Cheese1",[],Id("Smol"))]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese1",[],Id("Skibidi"),Block([Return(Id("s"))]))),VarDecl("a",Id("Skibidi"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("a"))])
-        output = """Type Mismatch: VarDecl(d,Id(Amongus),Id(a))\n"""
+        output = """Type Mismatch: VarDecl(d,Id(Amongus),Id(a))"""
         self.assertTrue(TestChecker.test(input, output, 369))
         
     def test_370(self):
@@ -807,7 +807,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([If(BooleanLiteral(True), Block([VarDecl("a",FloatType(),FloatLiteral(1.02))]), Block([VarDecl("a",IntType(),FloatLiteral(1.02))]))]))])
-        output = """Type Mismatch: VarDecl(a,IntType,FloatLiteral(1.02))\n"""
+        output = """Type Mismatch: VarDecl(a,IntType,FloatLiteral(1.02))"""
         self.assertTrue(TestChecker.test(input, output, 370))
         
     def test_371(self):
@@ -823,7 +823,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([Return(None)])),FuncDecl("poop1",[],IntType(),Block([Return(IntLiteral(1))])),FuncDecl("poop2",[],FloatType(),Block([Return(IntLiteral(2))]))])
-        output = """Type Mismatch: Return(IntLiteral(2))\n"""
+        output = """Type Mismatch: Return(IntLiteral(2))"""
         self.assertTrue(TestChecker.test(input, output, 371))
         
     def test_372(self):
@@ -849,7 +849,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([StructType("Skibidi",[("Cheese1",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[],VoidType(),Block([Return(None)]))),FuncDecl("poop",[],Id("Skibidi"),Block([VarDecl("a",Id("Skibidi"), None),Return(Id("a"))])),FuncDecl("poop1",[],Id("Toilet"),Block([VarDecl("a",Id("Toilet"), None),Return(Id("a"))])),FuncDecl("poop2",[],Id("Skibidi"),Block([VarDecl("b",Id("Toilet"), None),Return(Id("b"))]))])
-        output = """Type Mismatch: Return(Id(b))\n"""
+        output = """Type Mismatch: Return(Id(b))"""
         self.assertTrue(TestChecker.test(input, output, 372))
 
     def test_373(self):
@@ -869,7 +869,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([ConstDecl("a",None,IntLiteral(2)),FuncDecl("poop",[],VoidType(),Block([ConstDecl("a",None,IntLiteral(1)),ForBasic(BinaryOp("<", Id("a"), IntLiteral(1)),Block([ConstDecl("a",None,IntLiteral(1)),ForBasic(BinaryOp("<", Id("a"), IntLiteral(1)),Block([ConstDecl("a",None,IntLiteral(1)),ConstDecl("b",None,IntLiteral(1))])),ConstDecl("b",None,IntLiteral(1)),VarDecl("a", None,IntLiteral(1))]))]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: a\n", 373))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: a", 373))
     
     def test_374(self):
         """ 
@@ -881,7 +881,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([ConstDecl("a",None,IntLiteral(1)),ForEach(Id("a"),Id("b"),ArrayLiteral([IntLiteral(3)],IntType(),[IntLiteral(1),IntLiteral(2),IntLiteral(3)]),Block([VarDecl("b", None,IntLiteral(1))]))]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Variable: b\n", 374))
+        self.assertTrue(TestChecker.test(input, "Redeclared Variable: b", 374))
     
     def test_375(self):
         """ 
@@ -894,7 +894,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([ConstDecl("a",None,IntLiteral(2)),FuncDecl("poop",[],VoidType(),Block([ConstDecl("a",None,IntLiteral(1)),ForStep(VarDecl("a", None,IntLiteral(1)),BinaryOp("<", Id("a"), IntLiteral(1)),Assign(Id("b"),IntLiteral(2)),Block([ConstDecl("b",None,IntLiteral(1))]))]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Constant: b\n", 375))
+        self.assertTrue(TestChecker.test(input, "Redeclared Constant: b", 375))
         
     def test_376(self):
         """ 
@@ -909,7 +909,7 @@ class CheckSuite(unittest.TestCase):
             const e = v.e;
         """
         input = Program([VarDecl("v",Id("CHEESE"), None),ConstDecl("b",None,FieldAccess(Id("v"),"b")),StructType("CHEESE",[("a",IntType()),("b",IntType()),("c",IntType())],[]),ConstDecl("a",None,FieldAccess(Id("v"),"a")),ConstDecl("e",None,FieldAccess(Id("v"),"e"))])
-        self.assertTrue(TestChecker.test(input, "Undeclared Field: e\n", 376))
+        self.assertTrue(TestChecker.test(input, "Undeclared Field: e", 376))
         
     def test_377(self):
         """ 
@@ -920,7 +920,7 @@ class CheckSuite(unittest.TestCase):
             func poop (a, a int) {return;}
         """
         input = Program([StructType("CHEESE",[("Cheese",IntType())],[]),MethodDecl("v",Id("CHEESE"),FuncDecl("poop",[ParamDecl("a",IntType()),ParamDecl("b",IntType())],VoidType(),Block([Return(None)]))),FuncDecl("poop",[ParamDecl("a",IntType()),ParamDecl("a",IntType())],VoidType(),Block([Return(None)]))])
-        self.assertTrue(TestChecker.test(input, "Redeclared Parameter: a\n", 377))
+        self.assertTrue(TestChecker.test(input, "Redeclared Parameter: a", 377))
     
     def test_378(self):
         """ 
@@ -941,7 +941,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([VarDecl("v",Id("CHEESE"), None),StructType("CHEESE",[("a",IntType())],[]),InterfaceType("VO",[Prototype("poop",[],IntType())]),MethodDecl("v",Id("CHEESE"),FuncDecl("poop",[],IntType(),Block([Return(IntLiteral(1))]))),MethodDecl("b",Id("CHEESE"),FuncDecl("koo",[],VoidType(),Block([MethCall(Id("b"),"koo",[])]))),FuncDecl("poop",[],VoidType(),Block([VarDecl("x",Id("VO"), None),ConstDecl("b",None,MethCall(Id("x"),"poop",[])),MethCall(Id("x"),"koo",[])]))])
-        self.assertTrue(TestChecker.test(input, "Undeclared Method: koo\n", 378))
+        self.assertTrue(TestChecker.test(input, "Undeclared Method: koo", 378))
     
     def test_379(self):
         """ 
@@ -978,7 +978,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = b;
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),StructType("Smol",[("LockIn",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),InterfaceType("Amongus",[Prototype("Cheese",[],VoidType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[],VoidType(),Block([Return(None)]))),VarDecl("a",Id("Skibidi"), None),VarDecl("b",Id("Smol"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("b"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(b))\n", 380))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(b))", 380))
     
     def test_381(self):
         """ 
@@ -994,7 +994,7 @@ class CheckSuite(unittest.TestCase):
             var c Amongus = a;
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),StructType("Smol",[("LockIn",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),InterfaceType("Amongus",[Prototype("Cheese",[],IntType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[],VoidType(),Block([Return(None)]))),VarDecl("a",Id("Skibidi"), None),VarDecl("b",Id("Smol"), None),VarDecl("c",Id("Amongus"),Id("a"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Amongus),Id(a))\n", 381))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,Id(Amongus),Id(a))", 381))
     
     def test_382(self):
         """ 
@@ -1010,7 +1010,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = a;
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),StructType("Smol",[("LockIn",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],Id("Skibidi"))]),InterfaceType("Amongus",[Prototype("Cheese",[],Id("Smol"))]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[],Id("Skibidi"),Block([Return(Id("s"))]))),VarDecl("a",Id("Skibidi"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("a"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(a))\n", 382))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(a))", 382))
     
     def test_383(self):
         """ 
@@ -1026,7 +1026,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = a;
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),StructType("Smol",[("LockIn",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[IntType(),IntType()],Id("Skibidi"))]),InterfaceType("Amongus",[Prototype("Cheese",[IntType()],Id("Skibidi"))]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[ParamDecl("a",IntType()),ParamDecl("b",IntType())],Id("Skibidi"),Block([Return(Id("s"))]))),VarDecl("a",Id("Skibidi"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("a"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(a))\n", 383))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(a))", 383))
     
     def test_384(self):
         """ 
@@ -1042,7 +1042,7 @@ class CheckSuite(unittest.TestCase):
             var d Amongus = a;
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),StructType("Smol",[("LockIn",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[IntType(),IntType()],Id("Skibidi"))]),InterfaceType("Amongus",[Prototype("Cheese",[IntType(),FloatType()],Id("Skibidi"))]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[ParamDecl("a",IntType()),ParamDecl("b",IntType())],Id("Skibidi"),Block([Return(Id("s"))]))),VarDecl("a",Id("Skibidi"), None),VarDecl("c",Id("Toilet"),Id("a")),VarDecl("d",Id("Amongus"),Id("a"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(a))\n", 384))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,Id(Amongus),Id(a))", 384))
     
     def test_385(self):
         """ 
@@ -1055,7 +1055,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([If(BooleanLiteral(True), Block([VarDecl("a",FloatType(),FloatLiteral(1.02))]), Block([VarDecl("a",IntType(),FloatLiteral(1.02))]))]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(a,IntType,FloatLiteral(1.02))\n", 385))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(a,IntType,FloatLiteral(1.02))", 385))
    
     def test_386(self):
         """ 
@@ -1066,7 +1066,7 @@ class CheckSuite(unittest.TestCase):
             var c int = b;
         """
         input = Program([StructType("Skibidi",[("v",IntType()),("t",IntType())],[]),VarDecl("a", None,StructLiteral("Skibidi",[("v",IntLiteral(1)),("t",IntLiteral(2))])),VarDecl("b",Id("Skibidi"),Id("a")),VarDecl("c",IntType(),Id("b"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,IntType,Id(b))\n", 386))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(c,IntType,Id(b))", 386))
     
     def test_387(self):
         """ 
@@ -1084,7 +1084,7 @@ class CheckSuite(unittest.TestCase):
             var d [1] string = b;
         """
         input = Program([VarDecl("a",ArrayType([IntLiteral(2),IntLiteral(3)],IntType()), None),VarDecl("b", None,ArrayCell(Id("a"),[IntLiteral(1),IntLiteral(2)])),VarDecl("c",IntType(),Id("b")),VarDecl("d",ArrayType([IntLiteral(1)],StringType()),Id("b"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,ArrayType(StringType,[IntLiteral(1)]),Id(b))\n", 388))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,ArrayType(StringType,[IntLiteral(1)]),Id(b))", 388))
     
     def test_389(self):
         """ 
@@ -1094,7 +1094,7 @@ class CheckSuite(unittest.TestCase):
             var d [3] string = b;
         """
         input = Program([VarDecl("a",ArrayType([IntLiteral(2),IntLiteral(3)],IntType()), None),VarDecl("b", None,ArrayCell(Id("a"),[IntLiteral(1)])),VarDecl("c",ArrayType([IntLiteral(3)],IntType()),Id("b")),VarDecl("d",ArrayType([IntLiteral(3)],StringType()),Id("b"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,ArrayType(StringType,[IntLiteral(3)]),Id(b))\n", 389))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(d,ArrayType(StringType,[IntLiteral(3)]),Id(b))", 389))
     
     def test_390(self):
         """ 
@@ -1102,7 +1102,7 @@ class CheckSuite(unittest.TestCase):
             var b = a[1.0];
         """
         input = Program([VarDecl("a",ArrayType([IntLiteral(2),IntLiteral(3)],IntType()), None),VarDecl("b", None,ArrayCell(Id("a"),[FloatLiteral(1.0)]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: ArrayCell(Id(a),[FloatLiteral(1.0)])\n", 390))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: ArrayCell(Id(a),[FloatLiteral(1.0)])", 390))
     
     def test_391(self):
         """ 
@@ -1112,7 +1112,7 @@ class CheckSuite(unittest.TestCase):
             var d = c.x;
         """
         input = Program([StructType("Skibidi",[("v",IntType()),("x",Id("Skibidi"))],[]),VarDecl("b",Id("Skibidi"), None),VarDecl("c", None,FieldAccess(FieldAccess(Id("b"),"x"),"v")),VarDecl("d", None,FieldAccess(Id("c"),"x"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: FieldAccess(Id(c),x)\n", 391))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: FieldAccess(Id(c),x)", 391))
     
     def test_392(self):
         """ 
@@ -1129,7 +1129,7 @@ class CheckSuite(unittest.TestCase):
             var e int = nil;
         """
         input = Program([StructType("Skibidi",[("Cheese",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),VarDecl("a",Id("Toilet"), None),VarDecl("c",Id("Toilet"),NilLiteral()),VarDecl("d",Id("Skibidi"),NilLiteral()),FuncDecl("poop",[],VoidType(),Block([Assign(Id("c"),Id("a")),Assign(Id("a"),NilLiteral())])),VarDecl("e",IntType(),NilLiteral())])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,IntType,Nil)\n", 392))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,IntType,Nil)", 392))
     
     def test_393(self):
         """ 
@@ -1137,7 +1137,7 @@ class CheckSuite(unittest.TestCase):
             var b = ! 1;
         """
         input = Program([VarDecl("a", None,UnaryOp("!",BooleanLiteral(True))),VarDecl("b", None,UnaryOp("!",IntLiteral(1)))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: UnaryOp(!,IntLiteral(1))\n", 393))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: UnaryOp(!,IntLiteral(1))", 393))
     
     def test_394(self):
         """ 
@@ -1151,7 +1151,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([VarDecl("arr",ArrayType([IntLiteral(2)],IntType()), None),ForEach(Id("a"),Id("b"),Id("arr"),Block([VarDecl("c",IntType(),Id("a")),VarDecl("d",IntType(),Id("b")),VarDecl("e",StringType(),Id("a"))]))]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,StringType,Id(a))\n", 394))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,StringType,Id(a))", 394))
     
     def test_395(self):
         """ 
@@ -1165,7 +1165,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],VoidType(),Block([VarDecl("arr",ArrayType([IntLiteral(2),IntLiteral(3)],IntType()), None),ForEach(Id("a"),Id("b"),Id("arr"),Block([VarDecl("c",IntType(),Id("a")),VarDecl("d",ArrayType([IntLiteral(3)],IntType()),Id("b")),VarDecl("e",ArrayType([IntLiteral(2)],StringType()),Id("a"))]))]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,ArrayType(StringType,[IntLiteral(2)]),Id(a))\n", 395))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(e,ArrayType(StringType,[IntLiteral(2)]),Id(a))", 395))
     
     def test_396(self):
         """ 
@@ -1180,7 +1180,7 @@ class CheckSuite(unittest.TestCase):
             var c int = a.Cheese();
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],IntType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[],IntType(),Block([Return(IntLiteral(1))]))),VarDecl("i",Id("Toilet"), None),VarDecl("s",Id("Skibidi"), None),VarDecl("a",IntType(),MethCall(Id("i"),"Cheese",[])),VarDecl("b",IntType(),MethCall(Id("s"),"Cheese",[])),VarDecl("c",IntType(),MethCall(Id("a"),"Cheese",[]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: MethodCall(Id(a),Cheese,[])\n", 396))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: MethodCall(Id(a),Cheese,[])", 396))
     
     def test_397(self):
         """ 
@@ -1191,7 +1191,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[],IntType(),Block([MethCall(Id("s"),"Cheese",[]),Return(IntLiteral(1))])))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: MethodCall(Id(s),Cheese,[])\n", 397))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: MethodCall(Id(s),Cheese,[])", 397))
     
     def test_398(self):
         """ 
@@ -1201,7 +1201,7 @@ class CheckSuite(unittest.TestCase):
             }
         """
         input = Program([FuncDecl("poop",[],ArrayType([IntLiteral(2)],FloatType()),Block([Return(ArrayLiteral([IntLiteral(2)],FloatType(),[FloatLiteral(1.0),FloatLiteral(2.0)])),Return(ArrayLiteral([IntLiteral(2)],IntType(),[IntLiteral(1),IntLiteral(2)]))]))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: Return(ArrayLiteral([IntLiteral(2)],IntType,[IntLiteral(1),IntLiteral(2)]))\n", 398))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: Return(ArrayLiteral([IntLiteral(2)],IntType,[IntLiteral(1),IntLiteral(2)]))", 398))
     
     def test_399(self):
         """ 
@@ -1229,4 +1229,4 @@ class CheckSuite(unittest.TestCase):
             var a [2] Toilet = b;
         """
         input = Program([StructType("Skibidi",[("LockIn",IntType())],[]),InterfaceType("Toilet",[Prototype("Cheese",[],VoidType())]),MethodDecl("s",Id("Skibidi"),FuncDecl("Cheese",[],VoidType(),Block([Return(None)]))),VarDecl("b",ArrayType([IntLiteral(2)],Id("Skibidi")), None),VarDecl("a",ArrayType([IntLiteral(2)],Id("Toilet")),Id("b"))])
-        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(a,ArrayType(Id(Toilet),[IntLiteral(2)]),Id(b))\n", 401))
+        self.assertTrue(TestChecker.test(input, "Type Mismatch: VarDecl(a,ArrayType(Id(Toilet),[IntLiteral(2)]),Id(b))", 401))

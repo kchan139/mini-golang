@@ -7,67 +7,67 @@ class ASTGenSuite(unittest.TestCase):
         input = """const KhoaPineapple = poo(1);"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[IntLiteral(1)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 201))
+        self.assertTrue(TestAST.test(input, str(expect), 201))
 
     def test_202(self):
         input = """const KhoaPineapple = poo(1.0,true,false,nil,\"KhoaPineapple\");"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[FloatLiteral(1.0),BooleanLiteral(True),BooleanLiteral(False),NilLiteral(),StringLiteral("\"KhoaPineapple\"")]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 202))
+        self.assertTrue(TestAST.test(input, str(expect), 202))
 
     def test_203(self):
         input = """const KhoaPineapple = poo(id);"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[Id("id")]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 203))
+        self.assertTrue(TestAST.test(input, str(expect), 203))
 
     def test_204(self):
         input = """const KhoaPineapple = poo(1+2-3&&5--1);"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[BinaryOp("&&", BinaryOp("-", BinaryOp("+", IntLiteral(1), IntLiteral(2)), IntLiteral(3)), BinaryOp("-", IntLiteral(5), UnaryOp("-",IntLiteral(1))))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 204))
+        self.assertTrue(TestAST.test(input, str(expect), 204))
 
     def test_205(self):
         input = """const KhoaPineapple = poo(a > b <= c);"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[BinaryOp("<=", BinaryOp(">", Id("a"), Id("b")), Id("c"))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 205))
+        self.assertTrue(TestAST.test(input, str(expect), 205))
 
     def test_206(self):
         input = """const KhoaPineapple = poo(a[2][3]);"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[ArrayCell(Id("a"),[IntLiteral(2),IntLiteral(3)])]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 206))
+        self.assertTrue(TestAST.test(input, str(expect), 206))
 
     def test_207(self):
         input = """const KhoaPineapple = poo(a.b.c);"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[FieldAccess(FieldAccess(Id("a"),"b"),"c")]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 207))
+        self.assertTrue(TestAST.test(input, str(expect), 207))
 
     def test_208(self):
         input = """const KhoaPineapple = poo(a(),b.a(2, 3));"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[FuncCall("a",[]),MethCall(Id("b"),"a",[IntLiteral(2),IntLiteral(3)])]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 208))
+        self.assertTrue(TestAST.test(input, str(expect), 208))
 
     def test_209(self):
         input = """const KhoaPineapple = poo(a * (1+2));"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[BinaryOp("*", Id("a"), BinaryOp("+", IntLiteral(1), IntLiteral(2)))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 209))
+        self.assertTrue(TestAST.test(input, str(expect), 209))
 
     def test_210(self):
         input = """const KhoaPineapple = poo(KhoaPineapple {}, KhoaPineapple {a: 1});"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[StructLiteral("KhoaPineapple",[]),StructLiteral("KhoaPineapple",[("a",IntLiteral(1))])]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 210))
+        self.assertTrue(TestAST.test(input, str(expect), 210))
 
     def test_211(self):
         input = """const KhoaPineapple = poo([1]int{1}, [1][1]int{2});"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[ArrayLiteral([IntLiteral(1)],IntType(),[IntLiteral(1)]),ArrayLiteral([IntLiteral(1),IntLiteral(1)],IntType(),[IntLiteral(2)])]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 211))
+        self.assertTrue(TestAST.test(input, str(expect), 211))
 
     def test_212(self):
         input = """
@@ -79,7 +79,7 @@ class ASTGenSuite(unittest.TestCase):
             VarDecl("KhoaPineapple",IntType(), None),
             VarDecl("Votine",IntType(),IntLiteral(1))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 212))
+        self.assertTrue(TestAST.test(input, str(expect), 212))
 
     def test_213(self):
         input = """
@@ -89,7 +89,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([FuncDecl("poo",[],IntType(),Block([Return(None)])),
             FuncDecl("poo",[ParamDecl("a",IntType()),ParamDecl("b",IntType())],VoidType(),Block([Return(None)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 213))
+        self.assertTrue(TestAST.test(input, str(expect), 213))
 
     def test_214(self):
         input = """
@@ -97,7 +97,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([MethodDecl("KhoaPineapple",Id("v"),FuncDecl("poo",[ParamDecl("KhoaPineapple",IntType())],VoidType(),Block([Return(None)])))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 214))
+        self.assertTrue(TestAST.test(input, str(expect), 214))
 
 
     def test_215(self):
@@ -108,7 +108,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([StructType("KhoaPineapple",[("a",IntType())],[])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 215))
+        self.assertTrue(TestAST.test(input, str(expect), 215))
 
 
     def test_216(self):
@@ -120,7 +120,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([StructType("KhoaPineapple",[("a",IntType()),("b",FloatType())],[])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 216))
+        self.assertTrue(TestAST.test(input, str(expect), 216))
 
 
     def test_217(self):
@@ -132,7 +132,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([FuncDecl("KhoaPineapple",[],VoidType(),Block([VarDecl("a",IntType(), None),ConstDecl("a",None,NilLiteral())]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 217))
+        self.assertTrue(TestAST.test(input, str(expect), 217))
 
     def test_218(self):
         input = """
@@ -143,7 +143,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([FuncDecl("KhoaPineapple",[],VoidType(),Block([Assign(Id("a"),BinaryOp("+", Id("a"), IntLiteral(1))),Assign(Id("b"),BinaryOp("-", Id("b"), IntLiteral(2)))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 218))
+        self.assertTrue(TestAST.test(input, str(expect), 218))
 
     def test_219(self):
         input = """
@@ -154,7 +154,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([FuncDecl("KhoaPineapple",[],VoidType(),Block([Break(),Continue()]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 219))
+        self.assertTrue(TestAST.test(input, str(expect), 219))
 
     def test_220(self):
         input = """
@@ -170,7 +170,7 @@ class ASTGenSuite(unittest.TestCase):
             MethCall(FieldAccess(Id("a"),"b"),"poo",[Id("x"),Id("y")])
         ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 220))
+        self.assertTrue(TestAST.test(input, str(expect), 220))
 
     def test_221(self):
         input = """
@@ -184,7 +184,7 @@ class ASTGenSuite(unittest.TestCase):
             If(BinaryOp(">", Id("x"), Id("y")), Block([Return(IntLiteral(5))]), None)
         ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 221))
+        self.assertTrue(TestAST.test(input, str(expect), 221))
 
     def test_222(self):
         input = """
@@ -198,7 +198,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([FuncDecl("KhoaPineapple",[],VoidType(),Block([If(IntLiteral(1), Block([Assign(Id("a"),IntLiteral(1))]), Block([Assign(Id("a"),IntLiteral(2))]))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 222))
+        self.assertTrue(TestAST.test(input, str(expect), 222))
 
     def test_223(self):
         input = """
@@ -216,7 +216,7 @@ class ASTGenSuite(unittest.TestCase):
                 If(IntLiteral(1), Block([Assign(Id("a"),IntLiteral(1))]),
                     If(IntLiteral(2), Block([Assign(Id("a"),IntLiteral(2))]), None)))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 223))
+        self.assertTrue(TestAST.test(input, str(expect), 223))
 
 
     def test_224(self):
@@ -228,7 +228,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([FuncDecl("KhoaPineapple",[],VoidType(),Block([ForBasic(BinaryOp("<", Id("i"), IntLiteral(10)),Block([Return(None)])),ForStep(VarDecl("i", None,IntLiteral(0)),BinaryOp("<", Id("i"), IntLiteral(10)),Assign(Id("i"),BinaryOp("+", Id("i"), IntLiteral(1))),Block([Return(None)]))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 224))
+        self.assertTrue(TestAST.test(input, str(expect), 224))
 
     def test_225(self):
         input = """
@@ -242,7 +242,7 @@ class ASTGenSuite(unittest.TestCase):
             ForEach(Id("i"),Id("val"),Id("myList"),Block([Assign(Id("i"),BinaryOp("+", Id("i"), IntLiteral(1)))]))
         ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 225))
+        self.assertTrue(TestAST.test(input, str(expect), 225))
 
     def test_226(self):
         input = """
@@ -253,7 +253,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("-", BinaryOp("+", BooleanLiteral(True), BooleanLiteral(False)), BooleanLiteral(True))),
             ConstDecl("b",None,BinaryOp("||", BinaryOp("&&", BooleanLiteral(False), BooleanLiteral(True)), BooleanLiteral(False)))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 226))
+        self.assertTrue(TestAST.test(input, str(expect), 226))
 
     def test_227(self):
         input = """
@@ -264,7 +264,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("||", BinaryOp("&&", IntLiteral(1), IntLiteral(2)), IntLiteral(3))),
             ConstDecl("b",None,BinaryOp("||", Id("x"), BinaryOp("&&", Id("y"), Id("z"))))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 227))
+        self.assertTrue(TestAST.test(input, str(expect), 227))
 
     def test_228(self):
         input = """
@@ -275,7 +275,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("&&", BinaryOp("+", IntLiteral(1), IntLiteral(2)), IntLiteral(3))),
             ConstDecl("b",None,BinaryOp("||", IntLiteral(4), BinaryOp("+", IntLiteral(5), IntLiteral(6))))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 228))
+        self.assertTrue(TestAST.test(input, str(expect), 228))
 
     def test_229(self):
         input = """
@@ -286,7 +286,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("-", IntLiteral(1), BinaryOp("%", IntLiteral(2), IntLiteral(3)))),
             ConstDecl("b",None,BinaryOp("%", BinaryOp("/", BinaryOp("*", IntLiteral(4), IntLiteral(5)), IntLiteral(6)), IntLiteral(7)))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 229))
+        self.assertTrue(TestAST.test(input, str(expect), 229))
 
     def test_230(self):
         input = """
@@ -294,7 +294,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([ConstDecl("a",None,BinaryOp("-", BinaryOp("+", IntLiteral(1), UnaryOp("-",IntLiteral(2))), IntLiteral(1)))
 		])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 230))
+        self.assertTrue(TestAST.test(input, str(expect), 230))
 
     def test_231(self):
         input = """
@@ -305,7 +305,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,ArrayLiteral([IntLiteral(1)],Id("ID"),[StructLiteral("KhoaPineapple",[])])),
             ConstDecl("b",None,ArrayLiteral([IntLiteral(2)],Id("ID"),[StructLiteral("Person",[]),StructLiteral("Student",[])]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 231))
+        self.assertTrue(TestAST.test(input, str(expect), 231))
 
     def test_232(self):
         input = """
@@ -316,7 +316,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,ArrayLiteral([IntLiteral(1),IntLiteral(3)],FloatType(),[FloatLiteral(1.0)])),
             ConstDecl("b",None,ArrayLiteral([IntLiteral(2),IntLiteral(2),IntLiteral(2)],IntType(),[IntLiteral(1),IntLiteral(2),IntLiteral(3),IntLiteral(4),IntLiteral(5),IntLiteral(6),IntLiteral(7),IntLiteral(8)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 232))
+        self.assertTrue(TestAST.test(input, str(expect), 232))
 
     def test_233(self):
         input = """
@@ -327,7 +327,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,StructLiteral("ID",[("a",IntLiteral(1)),("b",BooleanLiteral(True))])),
             ConstDecl("b",None,StructLiteral("Person",[("name",StringLiteral("\"John\"")),("age",IntLiteral(25))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 233))
+        self.assertTrue(TestAST.test(input, str(expect), 233))
 
     def test_234(self):
         input = """
@@ -338,7 +338,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,StructLiteral("ID",[("a",ArrayLiteral([IntLiteral(1)],IntType(),[IntLiteral(1)]))])),
             ConstDecl("b",None,StructLiteral("Person",[("address",StructLiteral("Address",[("city",StringLiteral("\"New York\""))]))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 234))
+        self.assertTrue(TestAST.test(input, str(expect), 234))
 
     def test_235(self):
         input = """
@@ -349,7 +349,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,StructLiteral("ID",[("b",BooleanLiteral(True)),("c",IntLiteral(42))])),
             ConstDecl("b",None,StructLiteral("Employee",[("name",StringLiteral("\"Alice\"")),("salary",FloatLiteral(50000.0))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 235))
+        self.assertTrue(TestAST.test(input, str(expect), 235))
 
     def test_236(self):
         input = """
@@ -360,7 +360,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("&&", BinaryOp("&&", IntLiteral(0), IntLiteral(1)), IntLiteral(2))),
             ConstDecl("b",None,BinaryOp("&&", BinaryOp("&&", Id("x"), Id("y")), Id("z")))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 236))
+        self.assertTrue(TestAST.test(input, str(expect), 236))
 
     def test_237(self):
         input = """
@@ -371,7 +371,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("||", BinaryOp("||", IntLiteral(0), IntLiteral(1)), IntLiteral(2))),
             ConstDecl("b",None,BinaryOp("||", BinaryOp("||", Id("x"), Id("y")), Id("z")))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 237))
+        self.assertTrue(TestAST.test(input, str(expect), 237))
 
     def test_238(self):
         input = """
@@ -382,7 +382,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("<=", BinaryOp(">=", IntLiteral(0), IntLiteral(1)), IntLiteral(2))),
             ConstDecl("b",None,BinaryOp("<=", BinaryOp(">", Id("x"), Id("y")), Id("z")))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 238))
+        self.assertTrue(TestAST.test(input, str(expect), 238))
 
     def test_239(self):
         input = """
@@ -393,7 +393,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("-", BinaryOp("+", IntLiteral(0), IntLiteral(1)), IntLiteral(2))),
             ConstDecl("b",None,BinaryOp("-", BinaryOp("+", Id("x"), Id("y")), Id("z")))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 239))
+        self.assertTrue(TestAST.test(input, str(expect), 239))
 
     def test_240(self):
         input = """
@@ -404,7 +404,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("/", BinaryOp("*", IntLiteral(0), IntLiteral(1)), IntLiteral(2))),
             ConstDecl("b",None,BinaryOp("/", BinaryOp("*", Id("x"), Id("y")), Id("z")))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 240))
+        self.assertTrue(TestAST.test(input, str(expect), 240))
 
     def test_241(self):
         input = """
@@ -415,7 +415,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,UnaryOp("!",UnaryOp("-",UnaryOp("!",IntLiteral(2))))),
             ConstDecl("b",None,UnaryOp("!",UnaryOp("-",UnaryOp("!",Id("x")))))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 241))
+        self.assertTrue(TestAST.test(input, str(expect), 241))
 
     def test_242(self):
         input = """
@@ -426,7 +426,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("||", BinaryOp("&&", IntLiteral(1), IntLiteral(2)), BinaryOp(">=", IntLiteral(3), BinaryOp("+", IntLiteral(4), BinaryOp("*", IntLiteral(5), UnaryOp("-",IntLiteral(6))))))),
             ConstDecl("b",None,BinaryOp("||", BinaryOp("&&", Id("x"), Id("y")), BinaryOp(">=", Id("z"), BinaryOp("+", Id("w"), BinaryOp("*", Id("v"), UnaryOp("-",Id("u")))))))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 242))
+        self.assertTrue(TestAST.test(input, str(expect), 242))
 
     def test_243(self):
         input = """
@@ -437,7 +437,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("==", BinaryOp("<=", BinaryOp(">=", BinaryOp("<", BinaryOp(">", IntLiteral(1), IntLiteral(2)), IntLiteral(3)), IntLiteral(4)), IntLiteral(5)), IntLiteral(6))),
             ConstDecl("b",None,BinaryOp("==", BinaryOp("<=", BinaryOp(">=", BinaryOp("<", BinaryOp(">", Id("x"), Id("y")), Id("z")), Id("w")), Id("v")), Id("u")))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 243))
+        self.assertTrue(TestAST.test(input, str(expect), 243))
 
     def test_244(self):
         input = """
@@ -448,7 +448,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp(">=", IntLiteral(1), BinaryOp("+", IntLiteral(2), IntLiteral(3)))),
             ConstDecl("b",None,BinaryOp(">=", Id("x"), BinaryOp("+", Id("y"), Id("z"))))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 244))
+        self.assertTrue(TestAST.test(input, str(expect), 244))
 
     def test_245(self):
         input = """
@@ -459,7 +459,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,ArrayCell(Id("a"),[IntLiteral(1),IntLiteral(2),IntLiteral(3),IntLiteral(4)])),
             ConstDecl("b",None,ArrayCell(Id("arr"),[Id("i"),Id("j"),Id("k"),Id("l")]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 245))
+        self.assertTrue(TestAST.test(input, str(expect), 245))
 
     def test_246(self):
         input = """
@@ -470,7 +470,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,ArrayCell(Id("a"),[BinaryOp("+", IntLiteral(1), IntLiteral(2))])),
             ConstDecl("b",None,ArrayCell(Id("arr"),[BinaryOp("+", Id("x"), Id("y"))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 246))
+        self.assertTrue(TestAST.test(input, str(expect), 246))
 
     def test_247(self):
         input = """
@@ -481,7 +481,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,FieldAccess(FieldAccess(FieldAccess(FieldAccess(Id("a"),"b"),"c"),"d"),"e")),
             ConstDecl("b",None,FieldAccess(FieldAccess(FieldAccess(FieldAccess(Id("obj"),"field1"),"field2"),"field3"),"field4"))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 247))
+        self.assertTrue(TestAST.test(input, str(expect), 247))
 
     def test_248(self):
         input = """
@@ -492,7 +492,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,FieldAccess(StructLiteral("ID",[]),"a")),
             ConstDecl("b",None,FieldAccess(StructLiteral("Person",[]),"name"))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 248))
+        self.assertTrue(TestAST.test(input, str(expect), 248))
 
     def test_249(self):
         input = """
@@ -503,7 +503,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,ArrayCell(FieldAccess(StructLiteral("ID",[]),"a"),[IntLiteral(2)])),
             ConstDecl("b",None,ArrayCell(FieldAccess(StructLiteral("Person",[]),"addresses"),[IntLiteral(0)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 249))
+        self.assertTrue(TestAST.test(input, str(expect), 249))
 
     def test_250(self):
         input = """
@@ -514,7 +514,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,MethCall(MethCall(MethCall(Id("a"),"b",[]),"c",[]),"d",[])),
             ConstDecl("b",None,MethCall(MethCall(MethCall(Id("obj"),"methamphetamine1",[]),"methamphetamine2",[]),"methamphetamine3",[]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 250))
+        self.assertTrue(TestAST.test(input, str(expect), 250))
 
     def test_251(self):
         input = """
@@ -525,14 +525,14 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,MethCall(FuncCall("a",[]),"d",[])),
             ConstDecl("b",None,MethCall(FuncCall("poop1",[]),"poop2",[]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 251))
+        self.assertTrue(TestAST.test(input, str(expect), 251))
 
 
     def test_252(self):
         input = """const KhoaPineapple = poo(1+2-3&&5--1);"""
         expect = Program([ConstDecl("KhoaPineapple",None,FuncCall("poo",[BinaryOp("&&", BinaryOp("-", BinaryOp("+", IntLiteral(1), IntLiteral(2)), IntLiteral(3)), BinaryOp("-", IntLiteral(5), UnaryOp("-",IntLiteral(1))))]))
 		])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 252))
+        self.assertTrue(TestAST.test(input, str(expect), 252))
 
     def test_253(self):
         input = """
@@ -543,7 +543,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,BinaryOp("*", Id("a"), BinaryOp("-", NilLiteral(), StringLiteral("\"a\"")))),
             ConstDecl("b",None,BinaryOp("*", Id("x"), BinaryOp("-", NilLiteral(), StringLiteral("\"string\""))))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 253))
+        self.assertTrue(TestAST.test(input, str(expect), 253))
 
     def test_254(self):
         input = """
@@ -560,7 +560,7 @@ class ASTGenSuite(unittest.TestCase):
                If(IntLiteral(2), Block([Return(None)]),
                   If(IntLiteral(3), Block([Return(None)]), None)))]))
 		])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 254))
+        self.assertTrue(TestAST.test(input, str(expect), 254))
 
     def test_255(self):
         input = """
@@ -571,7 +571,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,ArrayCell(FuncCall("poo",[]),[IntLiteral(2)])),
             ConstDecl("b",None,ArrayCell(FuncCall("getData",[]),[Id("index")]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 255))
+        self.assertTrue(TestAST.test(input, str(expect), 255))
 
     def test_256(self):
         input = """
@@ -582,7 +582,7 @@ class ASTGenSuite(unittest.TestCase):
             ConstDecl("a",None,Id("a")),
             ConstDecl("b",None,Id("variable"))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 256))
+        self.assertTrue(TestAST.test(input, str(expect), 256))
 
     def test_257(self):
         input = """
@@ -593,7 +593,7 @@ class ASTGenSuite(unittest.TestCase):
             VarDecl("a",Id("KhoaPineapple"),FloatLiteral(1.0)),
             VarDecl("b",Id("Person"),FloatLiteral(42.5))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 257))
+        self.assertTrue(TestAST.test(input, str(expect), 257))
 
     def test_258(self):
         input = """
@@ -604,7 +604,7 @@ class ASTGenSuite(unittest.TestCase):
             VarDecl("a",ArrayType([IntLiteral(2),IntLiteral(3)],IntType()), None),
             VarDecl("b",ArrayType([IntLiteral(5),IntLiteral(10)],FloatType()), None)
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 258))
+        self.assertTrue(TestAST.test(input, str(expect), 258))
 
     def test_259(self):
         input = """
@@ -615,7 +615,7 @@ class ASTGenSuite(unittest.TestCase):
             VarDecl("num", None,IntLiteral(1)),
             VarDecl("str", None,StringLiteral("\"hello\""))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 259))
+        self.assertTrue(TestAST.test(input, str(expect), 259))
 
     def test_260(self):
         input = """
@@ -626,7 +626,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             StructType("KhoaPineapple",[("x",IntType()),("y",StringType())],[])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 260))
+        self.assertTrue(TestAST.test(input, str(expect), 260))
 
     def test_261(self):
         input = """
@@ -638,7 +638,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             StructType("Person",[("name",StringType()),("age",IntType())],[])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 261))
+        self.assertTrue(TestAST.test(input, str(expect), 261))
 
     def test_262(self):
         input = """
@@ -651,7 +651,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             StructType("KhoaPineapple",[("a",IntType()),("b",BoolType()),("c",FloatType())],[])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 262))
+        self.assertTrue(TestAST.test(input, str(expect), 262))
 
     def test_263(self):
         input = """
@@ -664,7 +664,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             StructType("KhoaPineapple",[("a",IntType()),("b",BoolType()),("c",ArrayType([IntLiteral(2)],Id("KhoaPineapple")))],[])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 263))
+        self.assertTrue(TestAST.test(input, str(expect), 263))
 
     def test_264(self):
         input = """
@@ -675,7 +675,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             InterfaceType("KhoaPineapple",[Prototype("Add",[],VoidType())])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 264))
+        self.assertTrue(TestAST.test(input, str(expect), 264))
 
     def test_265(self):
         input = """
@@ -690,7 +690,7 @@ class ASTGenSuite(unittest.TestCase):
                 Prototype("Subtract",[IntType()],VoidType())
             ])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 265))
+        self.assertTrue(TestAST.test(input, str(expect), 265))
 
     def test_266(self):
         input = """
@@ -705,7 +705,7 @@ class ASTGenSuite(unittest.TestCase):
                 Prototype("Multiply",[IntType(),IntType()],VoidType())
             ])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 266))
+        self.assertTrue(TestAST.test(input, str(expect), 266))
 
     def test_267(self):
         input = """
@@ -720,7 +720,7 @@ class ASTGenSuite(unittest.TestCase):
                 Prototype("Subtract",[IntType(),IntType(),IntType()],VoidType())
             ])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 267))
+        self.assertTrue(TestAST.test(input, str(expect), 267))
 
     def test_268(self):
         input = """
@@ -735,7 +735,7 @@ class ASTGenSuite(unittest.TestCase):
                 Prototype("Stringify",[IntType(),IntType()],ArrayType([IntLiteral(5)],FloatType()))
             ])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 268))
+        self.assertTrue(TestAST.test(input, str(expect), 268))
 
     def test_269(self):
         input = """
@@ -750,7 +750,7 @@ class ASTGenSuite(unittest.TestCase):
                 Prototype("Store",[],Id("Database"))
             ])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 269))
+        self.assertTrue(TestAST.test(input, str(expect), 269))
 
     def test_270(self):
         input = """
@@ -765,7 +765,7 @@ class ASTGenSuite(unittest.TestCase):
                 Prototype("Decode",[],VoidType())
             ])
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 270))
+        self.assertTrue(TestAST.test(input, str(expect), 270))
 
     def test_271(self):
         input = """
@@ -774,7 +774,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("process",[],VoidType(),Block([Return(None)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 271))
+        self.assertTrue(TestAST.test(input, str(expect), 271))
 
     def test_272(self):
         input = """
@@ -783,7 +783,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("transform",[ParamDecl("a",ArrayType([IntLiteral(2)],Id("ID")))],VoidType(),Block([Return(None)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 272))
+        self.assertTrue(TestAST.test(input, str(expect), 272))
 
     def test_273(self):
         input = """
@@ -792,7 +792,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("calculate",[ParamDecl("a",IntType()),ParamDecl("b",ArrayType([IntLiteral(1)],IntType()))],VoidType(),Block([Return(None)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 273))
+        self.assertTrue(TestAST.test(input, str(expect), 273))
 
     def test_274(self):
         input = """
@@ -801,7 +801,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("getData",[],ArrayType([IntLiteral(2)],IntType()),Block([Return(None)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 274))
+        self.assertTrue(TestAST.test(input, str(expect), 274))
 
     def test_275(self):
         input = """
@@ -810,7 +810,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             MethodDecl("Dog",Id("d"),FuncDecl("bark",[],VoidType(),Block([Return(None)])))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 275))
+        self.assertTrue(TestAST.test(input, str(expect), 275))
 
     def test_276(self):
         input = """
@@ -819,7 +819,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             MethodDecl("Vehicle",Id("v"),FuncDecl("move",[ParamDecl("a",ArrayType([IntLiteral(2)],Id("ID")))],VoidType(),Block([Return(None)])))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 276))
+        self.assertTrue(TestAST.test(input, str(expect), 276))
 
     def test_277(self):
         input = """
@@ -828,7 +828,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             MethodDecl("Calculator",Id("c"),FuncDecl("add",[ParamDecl("a",IntType()),ParamDecl("b",ArrayType([IntLiteral(1)],IntType()))],VoidType(),Block([Return(None)])))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 277))
+        self.assertTrue(TestAST.test(input, str(expect), 277))
 
     def test_278(self):
         input = """
@@ -837,7 +837,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             MethodDecl("Math",Id("m"),FuncDecl("multiply",[],ArrayType([IntLiteral(2)],IntType()),Block([Return(None)])))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 278))
+        self.assertTrue(TestAST.test(input, str(expect), 278))
 
     def test_279(self):
         input = """
@@ -856,7 +856,7 @@ class ASTGenSuite(unittest.TestCase):
             FuncDecl("calculate",[],VoidType(),Block([Return(None)])),
             MethodDecl("Vector",Id("v"),FuncDecl("normalize",[],ArrayType([IntLiteral(2)],IntType()),Block([Return(None)])))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 279))
+        self.assertTrue(TestAST.test(input, str(expect), 279))
 
     def test_280(self):
         input = """
@@ -870,7 +870,7 @@ class ASTGenSuite(unittest.TestCase):
                 ParamDecl("d",ArrayType([Id("ID"),IntLiteral(2),Id("length")],Id("Custom")))
             ],VoidType(),Block([Return(None)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 280))
+        self.assertTrue(TestAST.test(input, str(expect), 280))
 
     def test_281(self):
         input = """
@@ -881,7 +881,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("compute",[],VoidType(),Block([ConstDecl("result",None,FloatLiteral(3.14))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 281))
+        self.assertTrue(TestAST.test(input, str(expect), 281))
 
     def test_282(self):
         input = """
@@ -892,7 +892,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("process",[],VoidType(),Block([VarDecl("data", None,IntLiteral(100))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 282))
+        self.assertTrue(TestAST.test(input, str(expect), 282))
 
     def test_283(self):
         input = """
@@ -903,7 +903,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("initialize",[],VoidType(),Block([VarDecl("matrix",ArrayType([IntLiteral(3)],IntType()),IntLiteral(42))]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 283))
+        self.assertTrue(TestAST.test(input, str(expect), 283))
 
     def test_284(self):
         input = """
@@ -914,7 +914,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("setup",[],VoidType(),Block([VarDecl("config",StringType(), None)]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 284))
+        self.assertTrue(TestAST.test(input, str(expect), 284))
 
     def test_285(self):
         input = """
@@ -935,7 +935,7 @@ class ASTGenSuite(unittest.TestCase):
                 Assign(Id("remainder"),BinaryOp("%", Id("remainder"), IntLiteral(3)))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 285))
+        self.assertTrue(TestAST.test(input, str(expect), 285))
 
     def test_286(self):
         input = """
@@ -948,7 +948,7 @@ class ASTGenSuite(unittest.TestCase):
                 Assign(ArrayCell(Id("matrix"),[BinaryOp("*", IntLiteral(2), Id("index"))]),Id("value"))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 286))
+        self.assertTrue(TestAST.test(input, str(expect), 286))
 
     def test_287(self):
         input = """
@@ -961,7 +961,7 @@ class ASTGenSuite(unittest.TestCase):
                 Assign(ArrayCell(FieldAccess(FieldAccess(ArrayCell(Id("obj"),[IntLiteral(2)]),"field"),"items"),[IntLiteral(3)]),Id("new_value"))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 287))
+        self.assertTrue(TestAST.test(input, str(expect), 287))
 
     def test_288(self):
         input = """
@@ -972,7 +972,7 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([FuncDecl("KhoaPineapple",[],VoidType(),Block([VarDecl("a",IntType(), None),ConstDecl("a",None,NilLiteral())]))
 		])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 288))
+        self.assertTrue(TestAST.test(input, str(expect), 288))
 
     def test_289(self):
         input = """
@@ -985,7 +985,7 @@ class ASTGenSuite(unittest.TestCase):
                 Assign(FieldAccess(Id("object"),"field"),IntLiteral(100))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 289))
+        self.assertTrue(TestAST.test(input, str(expect), 289))
 
     def test_290(self):
         input = """
@@ -998,7 +998,7 @@ class ASTGenSuite(unittest.TestCase):
                 Assign(FieldAccess(FieldAccess(ArrayCell(FieldAccess(Id("document"),"user"),[IntLiteral(5)]),"profile"),"email"),StringLiteral("\"new@example.com\""))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 290))
+        self.assertTrue(TestAST.test(input, str(expect), 290))
 
     def test_291(self):
         input = """
@@ -1010,7 +1010,7 @@ class ASTGenSuite(unittest.TestCase):
         expect = Program([
             FuncDecl("control",[],VoidType(),Block([Break(),Continue()]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 291))
+        self.assertTrue(TestAST.test(input, str(expect), 291))
 
     def test_292(self):
         input = """
@@ -1025,14 +1025,14 @@ class ASTGenSuite(unittest.TestCase):
                 Return(BinaryOp("+", FuncCall("sqrt",[IntLiteral(25)]), IntLiteral(5)))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 292))
+        self.assertTrue(TestAST.test(input, str(expect), 292))
 
     def test_293(self):
         input = """const KhoaPineapple = STRUCT {
             a : 1,
             b : false};"""
         expect = Program([ConstDecl("KhoaPineapple", None, StructLiteral("STRUCT",[("a",IntLiteral(1)),("b",BooleanLiteral(False))]))])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 293))
+        self.assertTrue(TestAST.test(input, str(expect), 293))
 
     def test_294(self):
         input = """
@@ -1047,7 +1047,7 @@ class ASTGenSuite(unittest.TestCase):
                 If(BinaryOp(">", Id("x"), Id("threshold")), Block([Return(Id("error_message"))]), None)
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 294))
+        self.assertTrue(TestAST.test(input, str(expect), 294))
 
     def test_295(self):
         input = """
@@ -1066,7 +1066,7 @@ class ASTGenSuite(unittest.TestCase):
                 Block([Return(StringLiteral("\"invalid\""))]))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 295))
+        self.assertTrue(TestAST.test(input, str(expect), 295))
 
     def test_296(self):
         input = """
@@ -1091,7 +1091,7 @@ class ASTGenSuite(unittest.TestCase):
                         ]), None)))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 296))
+        self.assertTrue(TestAST.test(input, str(expect), 296))
 
     def test_297(self):
         input = """
@@ -1109,7 +1109,7 @@ class ASTGenSuite(unittest.TestCase):
                     Block([Return(None)]))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 297))
+        self.assertTrue(TestAST.test(input, str(expect), 297))
 
     def test_298(self):
         input = """
@@ -1126,7 +1126,7 @@ class ASTGenSuite(unittest.TestCase):
                 ]))
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 298))
+        self.assertTrue(TestAST.test(input, str(expect), 298))
 
     def test_299(self):
         input = """
@@ -1139,7 +1139,7 @@ class ASTGenSuite(unittest.TestCase):
                 MethCall(MethCall(MethCall(MethCall(Id("data"),"transform",[]),"filter",[]),"map",[]),"reduce",[])
             ]))
         ])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 299))
+        self.assertTrue(TestAST.test(input, str(expect), 299))
 
     def test_300(self):
         input = """
@@ -1147,4 +1147,4 @@ class ASTGenSuite(unittest.TestCase):
         """
         expect = Program([ConstDecl("a",None,ArrayCell(Id("a"),[IntLiteral(1),IntLiteral(2),IntLiteral(3),IntLiteral(4)]))
 		])
-        self.assertTrue(TestAST.checkASTGen(input, str(expect), 300))
+        self.assertTrue(TestAST.test(input, str(expect), 300))

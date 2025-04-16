@@ -7,55 +7,55 @@ class ParserSuite(unittest.TestCase):
     def test_101(self):
         """Literal: constant int declaration"""
         self.assertTrue(
-            TestParser.checkParser("const Votien = 1;", "successful", 101)
+            TestParser.test("const Toilet = 1;", "successful", 101)
         )
 
     def test_102(self):
         """Literal: constant boolean declaration"""
         self.assertTrue(
-            TestParser.checkParser("const Votien = true;", "successful", 102)
+            TestParser.test("const Toilet = true;", "successful", 102)
         )
 
     def test_103(self):
         """Literal: array literal in constant declaration"""
         self.assertTrue(
-            TestParser.checkParser('const Votien = [5][0]string{1, "string"};', "successful", 103)
+            TestParser.test('const Toilet = [5][0]string{1, "string"};', "successful", 103)
         )
 
     def test_104(self):
         """Error: illegal float literal in array type"""
         self.assertTrue(
-            TestParser.checkParser("const Votien = [1.]ID{1, 3};", "Error on line 1 col 16: 1.", 104)
+            TestParser.test("const Toilet = [1.]ID{1, 3};", "Error on line 1 col 16: 1.", 104)
         )
 
     def test_105(self):
         """Literal: struct literal constant declaration"""
         self.assertTrue(
-            TestParser.checkParser('const Votien = Person{name: "Alice", age: 30};', "successful", 105)
+            TestParser.test('const Toilet = Person{name: "Alice", age: 30};', "successful", 105)
         )
 
     def test_106(self):
         """Expression: mix of logical, arithmetic and unary operators"""
         self.assertTrue(
-            TestParser.checkParser("const Votien = 1 || 2 && c + 3 / 2 - -1;", "successful", 106)
+            TestParser.test("const Toilet = 1 || 2 && c + 3 / 2 - -1;", "successful", 106)
         )
 
     def test_107(self):
         """Expression: array accesses and field accesses"""
         self.assertTrue(
-            TestParser.checkParser("const Votien = 1[2] + foo()[2] + ID[2].b.b;", "successful", 107)
+            TestParser.test("const Toilet = 1[2] + foo()[2] + ID[2].b.b;", "successful", 107)
         )
 
     def test_108(self):
         """Expression: function call with field access in expression"""
         self.assertTrue(
-            TestParser.checkParser("const Votien = ca.foo(132) + b.c[2];", "successful", 108)
+            TestParser.test("const Toilet = ca.foo(132) + b.c[2];", "successful", 108)
         )
 
     def test_109(self):
         """Expression: chained field access with function call"""
         self.assertTrue(
-            TestParser.checkParser("const Votien = a.a.foo();", "successful", 109)
+            TestParser.test("const Toilet = a.a.foo();", "successful", 109)
         )
 
     def test_110(self):
@@ -66,56 +66,56 @@ class ParserSuite(unittest.TestCase):
             var z str;
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 110)
+            TestParser.test(input_str, "successful", 110)
         )
 
     def test_111(self):
         """Declaration: constant expression with function call"""
         self.assertTrue(
-            TestParser.checkParser("const VoTien = a.b() + 2;", "successful", 111)
+            TestParser.test("const Toilet = a.b() + 2;", "successful", 111)
         )
 
     def test_112(self):
         """Declaration: multiple function declarations with different return types"""
         input_str = """
-            func VoTien(x int, y int) int {return;}
-            func VoTien1() [2][3] ID {return;};
-            func VoTien2() {return;}
+            func Toilet(x int, y int) int {return;}
+            func Toilet1() [2][3] ID {return;};
+            func Toilet2() {return;}
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 112)
+            TestParser.test(input_str, "successful", 112)
         )
 
     def test_113(self):
         """Declaration: multiple method declarations"""
         input_str = """
-            func (c Calculator) VoTien(x int) int {return;};
-            func (c Calculator) VoTien() ID {return;};
-            func (c Calculator) VoTien(x int, y [2]VoTien) {return;};
+            func (c Calculator) Toilet(x int) int {return;};
+            func (c Calculator) Toilet() ID {return;};
+            func (c Calculator) Toilet(x int, y [2]Toilet) {return;};
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 113)
+            TestParser.test(input_str, "successful", 113)
         )
 
     def test_114(self):
         """Declaration: struct type declaration"""
         input_str = """
-            type VoTien struct {
-                VoTien string;
-                VoTien [1][3]VoTien;
+            type Toilet struct {
+                Toilet string;
+                Toilet [1][3]Toilet;
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 114)
+            TestParser.test(input_str, "successful", 114)
         )
 
     def test_115(self):
         """Error: struct declaration with empty body"""
         input_str = """
-            type VoTien struct {}
+            type Toilet struct {}
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "Error on line 2 col 32: }", 115)
+            TestParser.test(input_str, "Error on line 2 col 32: }", 115)
         )
 
     def test_116(self):
@@ -127,42 +127,42 @@ class ParserSuite(unittest.TestCase):
                 Reset()
                 SayHello(name string);
             }
-            type VoTien interface {}
+            type Toilet interface {}
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "Error on line 8 col 35: }", 116)
+            TestParser.test(input_str, "Error on line 8 col 35: }", 116)
         )
 
     def test_117(self):
         """Declaration: function with inner declarations"""
         input_str = """
-            func VoTien() {
+            func Toilet() {
                 var x int = foo() + 3 / 4;
                 var y = "Hello" / 4;
                 var z str;
-                const VoTien = a.b() + 2;
+                const Toilet = a.b() + 2;
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 117)
+            TestParser.test(input_str, "successful", 117)
         )
 
     def test_118(self):
         """Statement: assignment using short declaration and field indexing"""
         input_str = """
-            func VoTien() {
+            func Toilet() {
                 x := foo() + 3 / 4;
                 x.c[2][4] := 1 + 2;
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 118)
+            TestParser.test(input_str, "successful", 118)
         )
 
     def test_119(self):
         """Statement: if-else-if statement with nested declarations"""
         input_str = """
-            func VoTien() {
+            func Toilet() {
                 if (x > 10) {return;}
                 if (x > 10) {
                   return;
@@ -174,26 +174,26 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 119)
+            TestParser.test(input_str, "successful", 119)
         )
 
     def test_120(self):
         """Statement: various forms of for loops"""
         input_str = """
-            func VoTien() {
+            func Toilet() {
                 for i < 10 {return;}
                 for i := 0; i < 10; i += 1 {return;}
                 for index, value := range array {return;}
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 120)
+            TestParser.test(input_str, "successful", 120)
         )
 
     def test_121(self):
         """Statement: break, continue, return and call statements"""
         input_str = """
-            func VoTien() {
+            func Toilet() {
                 for i < 10 {break;}
                 break;
                 continue;
@@ -203,97 +203,97 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 121)
+            TestParser.test(input_str, "successful", 121)
         )
 
     def test_122(self):
         """Literal: binary integer literal"""
         self.assertTrue(
-            TestParser.checkParser("const a = 0b11;", "successful", 122)
+            TestParser.test("const a = 0b11;", "successful", 122)
         )
 
     def test_123(self):
         """Error: invalid array literal element type"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = [true]int{1};", "Error on line 1 col 16: true", 123)
+            TestParser.test("var z Toilet = [true]int{1};", "Error on line 1 col 16: true", 123)
         )
 
     def test_124(self):
         """Expression: identifier followed by empty block (interpreted as a struct literal)"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = ID {};", "successful", 124)
+            TestParser.test("var z Toilet = ID {};", "successful", 124)
         )
 
     def test_125(self):
         """Expression: nested struct literal in variable initialization"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = ID {a: 2, b: 2 + 2 + ID {a: 1}};", "successful", 125)
+            TestParser.test("var z Toilet = ID {a: 2, b: 2 + 2 + ID {a: 1}};", "successful", 125)
         )
 
     def test_126(self):
         """Expression: multiple logical operators"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = 1 && 2 && 3 || 1 || 1;", "successful", 126)
+            TestParser.test("var z Toilet = 1 && 2 && 3 || 1 || 1;", "successful", 126)
         )
 
     def test_127(self):
         """Expression: mixed relational operators with array and struct literals"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = a >= 2 <= \"string\" > a[2][3] < ID{A: 2} >= [2]S{2};", "successful", 127)
+            TestParser.test("var z Toilet = a >= 2 <= \"string\" > a[2][3] < ID{A: 2} >= [2]S{2};", "successful", 127)
         )
 
     def test_128(self):
         """Expression: chained field accesses"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = a.b.a.c.e.g;", "successful", 128)
+            TestParser.test("var z Toilet = a.b.a.c.e.g;", "successful", 128)
         )
 
     def test_129(self):
         """Expression: nested array indexing with expression"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = a[2][3][a + 2];", "successful", 129)
+            TestParser.test("var z Toilet = a[2][3][a + 2];", "successful", 129)
         )
 
     def test_130(self):
         """Expression: function call on an array element in a chained expression"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = a.a.a[2].foo(1);", "successful", 130)
+            TestParser.test("var z Toilet = a.a.a[2].foo(1);", "successful", 130)
         )
 
     def test_131(self):
         """Expression: chained function and array call"""
         self.assertTrue(
-            TestParser.checkParser("var z VOTIEN = foo().a[2].goo();", "successful", 131)
+            TestParser.test("var z Toilet = foo().a[2].goo();", "successful", 131)
         )
 
     def test_132(self):
         """Expression: use of multiple unary operators"""
         self.assertTrue(
-            TestParser.checkParser("const k = -a + -!-!c - ---[2]int{2};", "successful", 132)
+            TestParser.test("const k = -a + -!-!c - ---[2]int{2};", "successful", 132)
         )
 
     def test_133(self):
         """Declaration: array variable without initializer"""
         self.assertTrue(
-            TestParser.checkParser("var c [2][3]ID;", "successful", 133)
+            TestParser.test("var c [2][3]ID;", "successful", 133)
         )
 
     def test_134(self):
         """Error: constant declaration with missing initializer"""
         self.assertTrue(
-            TestParser.checkParser("const a =;", "Error on line 1 col 9: ;", 134)
+            TestParser.test("const a =;", "Error on line 1 col 9: ;", 134)
         )
 
     def test_135(self):
         """Declaration: function with array parameter and array return type"""
         self.assertTrue(
-            TestParser.checkParser("func Add(x int, y [2]int) [2]id {return ;};", "successful", 135)
+            TestParser.test("func Add(x int, y [2]int) [2]id {return ;};", "successful", 135)
         )
 
     def test_136(self):
         """Declaration: function with no parameter and no return type"""
         self.assertTrue(
-            TestParser.checkParser("func Add() {return ;};", "successful", 136)
+            TestParser.test("func Add() {return ;};", "successful", 136)
         )
 
     def test_137(self):
@@ -306,7 +306,7 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 137)
+            TestParser.test(input_str, "successful", 137)
         )
 
     def test_138(self):
@@ -317,7 +317,7 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "Error on line 3 col 22: =", 138)
+            TestParser.test(input_str, "Error on line 3 col 22: =", 138)
         )
 
     def test_139(self):
@@ -331,13 +331,13 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 139)
+            TestParser.test(input_str, "successful", 139)
         )
 
     def test_140(self):
         """Error: interface type declaration with missing semicolon or newline token"""
         self.assertTrue(
-            TestParser.checkParser("type Calculator interface {Reset()}", "Error on line 1 col 34: }", 140)
+            TestParser.test("type Calculator interface {Reset()}", "Error on line 1 col 34: }", 140)
         )
 
     def test_141(self):
@@ -348,19 +348,19 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 141)
+            TestParser.test(input_str, "successful", 141)
         )
 
     def test_142(self):
         """Declaration: function with parameters and return type"""
         self.assertTrue(
-            TestParser.checkParser("func Add(x int, y int) int {return ;};", "successful", 142)
+            TestParser.test("func Add(x int, y int) int {return ;};", "successful", 142)
         )
 
     def test_143(self):
         """Error: method declaration with invalid receiver type"""
         self.assertTrue(
-            TestParser.checkParser("""
+            TestParser.test("""
                 func (c Calculator) Add(x int) int {
                     return ;
                 }
@@ -370,7 +370,7 @@ class ParserSuite(unittest.TestCase):
     def test_144(self):
         """Error: empty program (or missing content)"""
         self.assertTrue(
-            TestParser.checkParser("", "Error on line 1 col 0: <EOF>", 144)
+            TestParser.test("", "Error on line 1 col 0: <EOF>", 144)
         )
 
     def test_145(self):
@@ -381,7 +381,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 145)
+            TestParser.test(input_str, "successful", 145)
         )
 
     def test_146(self):
@@ -392,7 +392,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 146)
+            TestParser.test(input_str, "successful", 146)
         )
 
     def test_147(self):
@@ -407,7 +407,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 147)
+            TestParser.test(input_str, "successful", 147)
         )
 
     def test_148(self):
@@ -418,7 +418,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 148)
+            TestParser.test(input_str, "successful", 148)
         )
 
     def test_149(self):
@@ -429,7 +429,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "Error on line 3 col 24: +=", 149)
+            TestParser.test(input_str, "Error on line 3 col 24: +=", 149)
         )
 
     def test_150(self):
@@ -440,7 +440,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 150)
+            TestParser.test(input_str, "successful", 150)
         )
 
     def test_151(self):
@@ -457,7 +457,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 151)
+            TestParser.test(input_str, "successful", 151)
         )
 
     def test_152(self):
@@ -468,7 +468,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 152)
+            TestParser.test(input_str, "successful", 152)
         )
 
     def test_153(self):
@@ -479,7 +479,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 153)
+            TestParser.test(input_str, "successful", 153)
         )
 
     def test_154(self):
@@ -490,7 +490,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 154)
+            TestParser.test(input_str, "successful", 154)
         )
 
     def test_155(self):
@@ -503,7 +503,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 155)
+            TestParser.test(input_str, "successful", 155)
         )
 
     def test_156(self):
@@ -516,7 +516,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 156)
+            TestParser.test(input_str, "successful", 156)
         )
 
     def test_157(self):
@@ -528,7 +528,7 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 157)
+            TestParser.test(input_str, "successful", 157)
         )
 
     def test_158(self):
@@ -541,187 +541,187 @@ class ParserSuite(unittest.TestCase):
             };
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 158)
+            TestParser.test(input_str, "successful", 158)
         )
 
     def test_159(self):
         """Literal: complex array literal with multidimensional type"""
         self.assertTrue(
-            TestParser.checkParser("const a = [ID][2][VT]int{{{1}}};", "successful", 159)
+            TestParser.test("const a = [ID][2][VT]int{{{1}}};", "successful", 159)
         )
 
     def test_160(self):
         """Error: variable declaration missing initializer"""
         self.assertTrue(
-            TestParser.checkParser("var a;", "Error on line 1 col 5: ;", 160)
+            TestParser.test("var a;", "Error on line 1 col 5: ;", 160)
         )
 
     def test_161(self):
         """Error: variable declaration with illegal literal form"""
         self.assertTrue(
-            TestParser.checkParser("var a = {1, 2};", "Error on line 1 col 8: {", 161)
+            TestParser.test("var a = {1, 2};", "Error on line 1 col 8: {", 161)
         )
 
     def test_162(self):
         """Literal: constant float literal"""
         self.assertTrue(
-            TestParser.checkParser("const pi = 3.1415;", "successful", 162)
+            TestParser.test("const pi = 3.1415;", "successful", 162)
         )
 
     def test_163(self):
         """Literal: constant wtf"""
         self.assertTrue(
-            TestParser.checkParser("const a = [1]ID{Votien{}};", "successful", 163)
+            TestParser.test("const a = [1]ID{Toilet{}};", "successful", 163)
         )
 
     def test_164(self):
         """Error: illegal escape sequence in string literal"""
         self.assertTrue(
-            TestParser.checkParser("const s = \"Hello\\q\";", "\"Hello\\q", 164)
+            TestParser.test("const s = \"Hello\\q\";", "\"Hello\\q", 164)
         )
 
     def test_165(self):
         """Error: unclosed string literal"""
         self.assertTrue(
-            TestParser.checkParser("const s = \"Hello", "\"Hello", 165)
+            TestParser.test("const s = \"Hello", "\"Hello", 165)
         )
 
     def test_166(self):
         """Literal: valid string literal with escape sequence"""
         self.assertTrue(
-            TestParser.checkParser("const s = \"Hello\\nWorld\";", "successful", 166)
+            TestParser.test("const s = \"Hello\\nWorld\";", "successful", 166)
         )
 
     def test_167(self):
         """Declaration: array literal declaration"""
         self.assertTrue(
-            TestParser.checkParser("var arr = [3]int{1,2,3};", "successful", 167)
+            TestParser.test("var arr = [3]int{1,2,3};", "successful", 167)
         )
 
     def test_168(self):
         """Declaration: array variable declaration with initializer"""
         self.assertTrue(
-            TestParser.checkParser("var arr [2]int = [2]int{1, 2};", "successful", 168)
+            TestParser.test("var arr [2]int = [2]int{1, 2};", "successful", 168)
         )
 
     def test_169(self):
         """Literal: struct literal variable declaration"""
         self.assertTrue(
-            TestParser.checkParser("var person = Person{name: \"John\", age: 25};", "successful", 169)
+            TestParser.test("var person = Person{name: \"John\", age: 25};", "successful", 169)
         )
 
     def test_170(self):
         """Literal: nested struct literal variable declaration"""
         self.assertTrue(
-            TestParser.checkParser("var rec = Rectangle{topLeft: Point{x:0, y:0}, bottomRight: Point{x:10, y:10}};", "successful", 170)
+            TestParser.test("var rec = Rectangle{topLeft: Point{x:0, y:0}, bottomRight: Point{x:10, y:10}};", "successful", 170)
         )
 
     def test_171(self):
         """Declaration: function that multiplies two integers"""
         self.assertTrue(
-            TestParser.checkParser("func Multiply(a int, b int) int { return a * b; };", "successful", 171)
+            TestParser.test("func Multiply(a int, b int) int { return a * b; };", "successful", 171)
         )
 
     def test_172(self):
         """Declaration: function with string parameter and no return type"""
         self.assertTrue(
-            TestParser.checkParser("func Print(a string) { return; };", "successful", 172)
+            TestParser.test("func Print(a string) { return; };", "successful", 172)
         )
 
     def test_173(self):
         """Expression: function call inside an arithmetic expression"""
         self.assertTrue(
-            TestParser.checkParser("var result = Multiply(3, 14) + 2;", "successful", 173)
+            TestParser.test("var result = Multiply(3, 14) + 2;", "successful", 173)
         )
 
     def test_174(self):
         """Expression: array access on a previously declared array"""
         self.assertTrue(
-            TestParser.checkParser("var element = arr[1];", "successful", 174)
+            TestParser.test("var element = arr[1];", "successful", 174)
         )
 
     def test_175(self):
         """Expression: field access on a struct variable"""
         self.assertTrue(
-            TestParser.checkParser("var name = person.name;", "successful", 175)
+            TestParser.test("var name = person.name;", "successful", 175)
         )
 
     def test_176(self):
         """Expression: complex arithmetic expression with parentheses"""
         self.assertTrue(
-            TestParser.checkParser("var comp = (a + b) * (c - d) / e;", "successful", 176)
+            TestParser.test("var comp = (a + b) * (c - d) / e;", "successful", 176)
         )
 
     def test_177(self):
         """Expression: method call on an object"""
         self.assertTrue(
-            TestParser.checkParser("var ret = obj.method(1,2);", "successful", 177)
+            TestParser.test("var ret = obj.method(1,2);", "successful", 177)
         )
 
     def test_178(self):
         """Expression: chained method calls"""
         self.assertTrue(
-            TestParser.checkParser("var ret = obj.getA().getB().do();", "successful", 178)
+            TestParser.test("var ret = obj.getA().getB().do();", "successful", 178)
         )
 
     def test_179(self):
         """Statement: compound assignment with arithmetic operators"""
         self.assertTrue(
-            TestParser.checkParser("a += b * c - d / e;", "successful", 179)
+            TestParser.test("a += b * c - d / e;", "successful", 179)
         )
 
     def test_180(self):
         """Literal: constant boolean expression with logical operators"""
         self.assertTrue(
-            TestParser.checkParser("const flag = false && true || false;", "successful", 180)
+            TestParser.test("const flag = false && true || false;", "successful", 180)
         )
 
     def test_181(self):
         """Expression: chained relational operators"""
         self.assertTrue(
-            TestParser.checkParser("var rel = a == b != c < d <= e > f >= g;", "successful", 181)
+            TestParser.test("var rel = a == b != c < d <= e > f >= g;", "successful", 181)
         )
 
     def test_182(self):
         """Expression: logical operators with grouping"""
         self.assertTrue(
-            TestParser.checkParser("var logic = (a && b) || (!c);", "successful", 182)
+            TestParser.test("var logic = (a && b) || (!c);", "successful", 182)
         )
 
     def test_183(self):
         """Expression: use of unary minus operator"""
         self.assertTrue(
-            TestParser.checkParser("var neg = -a + (-b);", "successful", 183)
+            TestParser.test("var neg = -a + (-b);", "successful", 183)
         )
 
     def test_184(self):
         """Expression: multiple nested parentheses"""
         self.assertTrue(
-            TestParser.checkParser("var paren = (((a)));", "successful", 184)
+            TestParser.test("var paren = (((a)));", "successful", 184)
         )
 
     def test_185(self):
         """Statement: if statement without else clause"""
         self.assertTrue(
-            TestParser.checkParser("func Check() { if (a > 0) { return; } };", "successful", 185)
+            TestParser.test("func Check() { if (a > 0) { return; } };", "successful", 185)
         )
 
     def test_186(self):
         """Statement: for loop with minimal header"""
         self.assertTrue(
-            TestParser.checkParser("func Loop() { for i < 10 { return; } };", "successful", 186)
+            TestParser.test("func Loop() { for i < 10 { return; } };", "successful", 186)
         )
 
     def test_187(self):
         """Statement: for loop with complete header"""
         self.assertTrue(
-            TestParser.checkParser("func Loop() { for i := 0; i < 5; i += 1 { return; } };", "successful", 187)
+            TestParser.test("func Loop() { for i := 0; i < 5; i += 1 { return; } };", "successful", 187)
         )
 
     def test_188(self):
         """Statement: for loop using range clause with two identifiers"""
         self.assertTrue(
-            TestParser.checkParser("""
+            TestParser.test("""
                 func Iterate() { 
                     for key, value := range array {
                         return;
@@ -733,13 +733,13 @@ class ParserSuite(unittest.TestCase):
     def test_189(self):
         """Declaration: function with return statement returning an integer literal"""
         self.assertTrue(
-            TestParser.checkParser("func GetValue() int { return 42; };", "successful", 189)
+            TestParser.test("func GetValue() int { return 42; };", "successful", 189)
         )
 
     def test_190(self):
         """Statement: for loop with if-else inside, using break and continue"""
         self.assertTrue(
-            TestParser.checkParser("""
+            TestParser.test("""
                 func Process() { 
                     for i := 0; i < 10; i += 1 { 
                         if (i == 5) { 
@@ -754,19 +754,19 @@ class ParserSuite(unittest.TestCase):
     def test_191(self):
         """Expression: nested function calls as part of an expression"""
         self.assertTrue(
-            TestParser.checkParser("var nested = foo(bar(1, 2), baz(3));", "successful", 191)
+            TestParser.test("var nested = foo(bar(1, 2), baz(3));", "successful", 191)
         )
 
     def test_192(self):
         """Statement: assignment to an array element"""
         self.assertTrue(
-            TestParser.checkParser("arr[0] := 100;", "successful", 192)
+            TestParser.test("arr[0] := 100;", "successful", 192)
         )
 
     def test_193(self):
         """Statement: assignment to a struct field"""
         self.assertTrue(
-            TestParser.checkParser("person.age := person.age + 1;", "successful", 193)
+            TestParser.test("person.age := person.age + 1;", "successful", 193)
         )
 
     def test_194(self):
@@ -777,13 +777,13 @@ class ParserSuite(unittest.TestCase):
             var c int = a + b;
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 194)
+            TestParser.test(input_str, "successful", 194)
         )
 
     def test_195(self):
         """Literal: constant string declaration"""
         self.assertTrue(
-            TestParser.checkParser("const greeting = \"Hello, World!\";", "successful", 195)
+            TestParser.test("const greeting = \"Hello, World!\";", "successful", 195)
         )
 
     def test_196(self):
@@ -795,7 +795,7 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 196)
+            TestParser.test(input_str, "successful", 196)
         )
 
     def test_197(self):
@@ -806,7 +806,7 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 197)
+            TestParser.test(input_str, "successful", 197)
         )
 
     def test_198(self):
@@ -817,7 +817,7 @@ class ParserSuite(unittest.TestCase):
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 198)
+            TestParser.test(input_str, "successful", 198)
         )
 
     def test_199(self):
@@ -826,17 +826,17 @@ class ParserSuite(unittest.TestCase):
             func (p Point) Distance(q Point) float { return 0.0; }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 199)
+            TestParser.test(input_str, "successful", 199)
         )
 
     def test_200(self):
         """Declaration: function calling a function and a method"""
         input_str = """
-            func votien() {
+            func Toilet() {
                 foo(1, 2);
                 a[2].foo(1,3);
             }
         """
         self.assertTrue(
-            TestParser.checkParser(input_str, "successful", 200)
+            TestParser.test(input_str, "successful", 200)
         )
