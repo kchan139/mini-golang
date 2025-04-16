@@ -86,6 +86,8 @@ case "$1" in
         echo "Running semantic analysis tests..."
         python main.py test CheckSuite
         echo ""
+        echo "Running code generation tests..."
+        python main.py test CodeGenSuite
         ;;
     all_with_coverage)
         # Execute all unit tests with coverage
@@ -105,6 +107,8 @@ case "$1" in
         echo "Running semantic analysis tests..."
         coverage run --append main.py test CheckSuite
         echo ""
+        echo "Running code generation tests..."
+        coverage run --append main.py CodeGenSuite
         ;;
     clean)
         # Remove all test artifacts from directories
