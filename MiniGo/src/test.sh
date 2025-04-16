@@ -19,6 +19,8 @@ if [ "$#" -ne 1 ]; then
     echo "  parser   - Run syntax analysis test suite"
     echo "  ast      - Run abstract syntax tree generation tests"
     echo "  semantic - Run semantic analysis tests"
+    echo "  codegen  - Run code generation tests"
+    echo "  all      - Run all tests"
     echo "  clean    - Remove all test artifacts"
     exit 1
 fi
@@ -27,38 +29,62 @@ fi
 INPUT="./test/testcases"  # Directory containing input test files
 OUTPUT="./test/solutions"  # Directory containing expected outputs
 
-export ANTLR_JAR="antlr-4.9.2-complete.jar"
 python main.py gen && clear
-
 # Process command line argument and execute the appropriate action
 case "$1" in
     lexer)
-        # Generate and execute lexical analyzer tests
+        # Execute lexical analyzer tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running lexical analysis tests..."
         python main.py test LexerSuite
         ;;
     parser)
-        # Generate and execute syntax analyzer tests
+        # Execute syntax analyzer tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running syntax analysis tests..."
         python main.py test ParserSuite
         ;;
     ast)
-        # Generate and execute abstract syntax tree generation tests
+        # Execute abstract syntax tree generation tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running AST generation tests..."
         python main.py test ASTGenSuite
         ;;
     semantic)
-        # Generate and execute semantic analysis tests
+        # Execute semantic analysis tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running semantic analysis tests..."
         python main.py test CheckSuite
+        ;;
+    codegen)
+        # Execute code generation tests
+        rm -f ${INPUT}/* 2>/dev/null
+        rm -f ${OUTPUT}/* 2>/dev/null
+        echo "Running code generation tests..."
+        python main.py test CodeGenSuite
+        ;;
+    all)
+        # Execute all unit tests
+        rm -f ${INPUT}/* 2>/dev/null
+        rm -f ${OUTPUT}/* 2>/dev/null
+        echo "<<< RUNNING ALL TESTS >>>"
+        echo ""
+        echo "Running lexical analysis tests..."
+        python main.py test LexerSuite
+        echo ""
+        echo "Running syntax analysis tests..."
+        python main.py test ParserSuite
+        echo ""
+        echo "Running AST generation tests..."
+        python main.py test ASTGenSuite
+        echo ""
+        echo "Running semantic analysis tests..."
+        python main.py test CheckSuite
+        echo ""
         ;;
     clean)
         # Remove all test artifacts from directories
@@ -79,6 +105,8 @@ case "$1" in
         echo "  parser   - Run syntax analysis test suite"
         echo "  ast      - Run abstract syntax tree generation tests"
         echo "  semantic - Run semantic analysis tests"
+        echo "  codegen  - Run code generation tests"
+        echo "  all      - Run all tests"
         echo "  clean    - Remove all test artifacts"
         exit 1
         ;;
