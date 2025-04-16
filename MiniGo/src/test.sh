@@ -74,16 +74,16 @@ case "$1" in
         echo "<<< RUNNING ALL TESTS >>>"
         echo ""
         echo "Running lexical analysis tests..."
-        python main.py test LexerSuite
+        coverage run --append main.py test LexerSuite
         echo ""
         echo "Running syntax analysis tests..."
-        python main.py test ParserSuite
+        coverage run --append main.py test ParserSuite
         echo ""
         echo "Running AST generation tests..."
-        python main.py test ASTGenSuite
+        coverage run --append main.py test ASTGenSuite
         echo ""
         echo "Running semantic analysis tests..."
-        python main.py test CheckSuite
+        coverage run --append main.py test CheckSuite
         echo ""
         ;;
     clean)
