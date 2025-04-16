@@ -30,11 +30,7 @@ jobs:
       run: |
         export ANTLR_JAR="$(pwd)/MiniGo/src/antlr-4.9.2-complete.jar"
         cd "MiniGo/src"
-        python main.py gen
-        coverage run main.py test LexerSuite
-        coverage run main.py test ParserSuite
-        coverage run main.py test ASTGenSuite
-        coverage run main.py test CheckSuite
+        ./test.sh all
         coverage xml
 
     - name: Upload coverage to Codecov
