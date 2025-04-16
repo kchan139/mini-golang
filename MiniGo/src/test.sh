@@ -1,4 +1,5 @@
 #!/bin/bash
+export TERM=xterm
 
 # ==================================================================
 # Compiler Test Runner Script
