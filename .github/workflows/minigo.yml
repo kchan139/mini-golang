@@ -30,7 +30,7 @@ jobs:
       run: |
         export ANTLR_JAR="$(pwd)/MiniGo/src/antlr-4.9.2-complete.jar"
         cd "MiniGo/src"
-        ./test.sh all
+        ./test.sh all_with_coverage
         coverage xml
 
     - name: Upload coverage to Codecov

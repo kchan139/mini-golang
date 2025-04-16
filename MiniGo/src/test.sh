@@ -74,6 +74,25 @@ case "$1" in
         echo "<<< RUNNING ALL TESTS >>>"
         echo ""
         echo "Running lexical analysis tests..."
+        python main.py test LexerSuite
+        echo ""
+        echo "Running syntax analysis tests..."
+        python main.py test ParserSuite
+        echo ""
+        echo "Running AST generation tests..."
+        python main.py test ASTGenSuite
+        echo ""
+        echo "Running semantic analysis tests..."
+        python main.py test CheckSuite
+        echo ""
+        ;;
+    all_with_coverage)
+        # Execute all unit tests with coverage
+        rm -f ${INPUT}/* 2>/dev/null
+        rm -f ${OUTPUT}/* 2>/dev/null
+        echo "<<< RUNNING ALL TESTS >>>"
+        echo ""
+        echo "Running lexical analysis tests..."
         coverage run --append main.py test LexerSuite
         echo ""
         echo "Running syntax analysis tests..."
