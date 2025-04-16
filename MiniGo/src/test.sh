@@ -108,7 +108,7 @@ case "$1" in
         coverage run --append main.py test CheckSuite
         echo ""
         echo "Running code generation tests..."
-        coverage run --append main.py CodeGenSuite
+        coverage run --append main.py test CodeGenSuite
         ;;
     clean)
         # Remove all test artifacts from directories
