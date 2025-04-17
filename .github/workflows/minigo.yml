@@ -24,11 +24,11 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          docker-compose build
+          docker compose build
 
       - name: Run tests
         run: |
-          docker-compose run --rm minigo \
+          docker compose run --rm minigo \
             /bin/bash -c "cd MiniGo/src && python main.py gen && ./test.sh all"
 
       - name: Debug on failure
