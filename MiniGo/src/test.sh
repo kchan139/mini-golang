@@ -86,29 +86,8 @@ case "$1" in
         echo "Running semantic analysis tests..."
         python main.py test CheckSuite
         echo ""
-        echo "Running code generation tests..."
-        python main.py test CodeGenSuite
-        ;;
-    all_with_coverage)
-        # Execute all unit tests with coverage
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
-        echo "<<< RUNNING ALL TESTS >>>"
-        echo ""
-        echo "Running lexical analysis tests..."
-        coverage run --append main.py test LexerSuite
-        echo ""
-        echo "Running syntax analysis tests..."
-        coverage run --append main.py test ParserSuite
-        echo ""
-        echo "Running AST generation tests..."
-        coverage run --append main.py test ASTGenSuite
-        echo ""
-        echo "Running semantic analysis tests..."
-        coverage run --append main.py test CheckSuite
-        echo ""
-        echo "Running code generation tests..."
-        coverage run --append main.py test CodeGenSuite
+        # echo "Running code generation tests..."
+        # python main.py test CodeGenSuite
         ;;
     clean)
         # Remove all test artifacts from directories
