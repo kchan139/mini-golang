@@ -2,37 +2,38 @@ name: MiniGo CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build-test-lint:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.12"
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest coverage antlr4-python3-runtime==4.9.2
-        pip install -e .
-    
-    - name: Download ANTLR JAR
-      run: |
-        curl -O https://www.antlr.org/download/antlr-4.9.2-complete.jar
-        
-    - name: Run unit tests with coverage
-      run: |
-        export ANTLR_JAR="$(pwd)/MiniGo/src/antlr-4.9.2-complete.jar"
-        cd "MiniGo/src"
-        ./test.sh all_with_coverage
-        coverage xml
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      if: success()
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Set up Docker Compose
+        run: |
+          docker compose build
+
+      - name: Run tests
+        run: |
+          docker compose run --rm minigo \
+            /bin/bash -c "cd MiniGo/src && python main.py gen && ./test.sh all"
+
+      - name: Debug on failure
+        if: failure()
+        run: |
+          echo "=== Last 50 lines of test output ==="
+          docker run --rm $DOCKER_IMAGE \
+            tail -n 50 /app/MiniGo/src/test.log || true

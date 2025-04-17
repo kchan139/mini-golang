@@ -1,6 +1,8 @@
 .DS_Store
 *.txt
 .antlr/
+MiniGoClass.j
+MiniGoClass.class
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
