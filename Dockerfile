@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy ANTLR jar and set environment variable
-COPY app/MiniGo/src/antlr-4.9.2-complete.jar .
+COPY MiniGo/src/antlr-4.9.2-complete.jar .
 ENV ANTLR_JAR=/app/MiniGo/src/antlr-4.9.2-complete.jar
 
 # Set Python path for test modules
