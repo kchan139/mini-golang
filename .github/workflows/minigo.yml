@@ -30,10 +30,3 @@ jobs:
         run: |
           docker compose run --rm minigo \
             /bin/bash -c "cd MiniGo/src && python main.py gen && ./test.sh all"
-
-      - name: Debug on failure
-        if: failure()
-        run: |
-          echo "=== Last 50 lines of test output ==="
-          docker run --rm $DOCKER_IMAGE \
-            tail -n 50 /app/MiniGo/src/test.log || true
