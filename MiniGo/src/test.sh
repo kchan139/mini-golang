@@ -86,8 +86,8 @@ case "$1" in
         echo "Running semantic analysis tests..."
         python main.py test CheckSuite
         echo ""
-        # echo "Running code generation tests..."
-        # python main.py test CodeGenSuite
+        echo "Running code generation tests..."
+        python main.py test CodeGenSuite
         ;;
     clean)
         # Remove all test artifacts from directories
