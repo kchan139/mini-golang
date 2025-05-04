@@ -1,22 +1,31 @@
-FROM python:3.12-slim
+# Stage 1
 
-# Install Java (required for ANTLR)
-RUN apt-get update && \
-    apt-get install -y default-jdk
+FROM python:3.12-slim AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements first for better caching
 COPY requirements.txt .
-RUN pip install -r requirements.txt
 
-# Copy ANTLR jar and set environment variable
-COPY MiniGo/src/antlr-4.9.2-complete.jar .
-ENV ANTLR_JAR=/app/MiniGo/src/antlr-4.9.2-complete.jar
+RUN pip install --no-cache -r requirements.txt
 
-# Set Python path for test modules
-# ENV PYTHONPATH="/app"
+# Stage 2
 
-# Default command (can be overridden)
+FROM python:3.12-slim
+
+# Install Java Runtime Environment (JRE)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends default-jre && \
+    # Clean up apt cache
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /usr/local/lib/python3.12/site-packages/ /usr/local/lib/python3.12/site-packages/
+
+COPY MiniGo/src/antlr-4.9.2-complete.jar ./MiniGo/src/
+
+COPY . .
+
+ENV ANTLR_JAR="/app/MiniGo/src/antlr-4.9.2-complete.jar"
+
 CMD ["bash"] 
