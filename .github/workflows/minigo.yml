@@ -29,4 +29,4 @@ jobs:
       - name: Run tests
         run: |
           docker compose run --rm minigo \
-            /bin/bash -c "cd MiniGo/src && python main.py gen && ./test.sh all"
+            /bin/bash -c "cd MiniGo/src &&  ./test.sh all"
