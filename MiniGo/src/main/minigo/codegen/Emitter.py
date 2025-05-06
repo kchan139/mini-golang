@@ -2,7 +2,9 @@ from AST import *
 from Utils import *
 from StaticCheck import *
 from StaticError import *
+from CodeGenError import *
 from MachineCode import JasminCode
+from Frame import Frame
 from typing import Union
 import CodeGenerator as codegen
 
@@ -157,7 +159,8 @@ class Emitter():
             return self.jvm.emitILOAD(index)
         if type(inType) is FloatType:
             return self.jvm.emitFLOAD(index)
-        if type(inType) is codegen.ArrayType or type(inType) is Id or type(inType) is StringType:
+        if type(inType) is codegen.ArrayType or type(inType) is Id or \
+            type(inType) is codegen.ClassType or type(inType) is StringType:
             return self.jvm.emitALOAD(index)
         raise IllegalOperandException(name)
 
@@ -418,7 +421,7 @@ class Emitter():
     def emitPROLOG(self, name: str, parent: str, interface = False):
         result = []
         result.append(self.jvm.emitSOURCE(name + ".java"))
-        result.append(self.jvm.emitCLASS(f"public {"interface" if interface else ""} {name}"))
+        result.append(self.jvm.emitCLASS(f"public {'interface' if interface else ''} {name}"))
         result.append(self.jvm.emitSUPER("java/land/Object" if parent == "" else parent))
         return ''.join(result)
 
