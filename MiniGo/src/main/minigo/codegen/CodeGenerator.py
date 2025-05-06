@@ -1,12 +1,19 @@
+'''
+ *   @author Nguyen Hua Phung
+ *   @version 1.0
+ *   23/10/2015
+ *   This file provides a simple version of code generator
+ *
+'''
+from AST import *
 from Utils import *
-# from StaticCheck import *
-# from StaticError import *
-from Emitter import *
+from Visitor import *
+from StaticCheck import *
+from StaticError import *
 from Frame import Frame
+from Emitter import Emitter
 from abc import ABC, abstractmethod
 from functools import reduce
-from Visitor import *
-from AST import *
 
 class CodeGenerator(BaseVisitor,Utils):
     def __init__(self):

@@ -1,11 +1,10 @@
-from Utils import *
-# from StaticCheck import *
-# from StaticError import *
-import CodeGenerator as cgen
-from Frame import Frame
-from MachineCode import JasminCode
 from AST import *
-from CodeGenError import *
+from Utils import *
+from StaticCheck import *
+from StaticError import *
+import CodeGenerator as cgen
+from MachineCode import JasminCode
+
 
 class MType:
     def __init__(self,partype,rettype):
