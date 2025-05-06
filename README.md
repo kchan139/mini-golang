@@ -59,14 +59,14 @@ You can also build and run the project using Docker and Docker Compose.
 1.  **Build the Docker image:**
 
     ```bash
-    docker-compose build
+    docker compose up --build -d
     ```
 
 2.  **Run commands inside the container:**
 
     ```bash
     # Enter an interactive shell in the container
-    docker-compose run --rm minigo
+    docker compose exec minigo bash
 
     # Inside the container, navigate to the source directory
     cd MiniGo/src
