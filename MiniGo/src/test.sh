@@ -35,43 +35,43 @@ python3 main.py gen && clear
 case "$1" in
     lexer)
         # Execute lexical analyzer tests
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
+        rm -rf ${INPUT}/* 2>/dev/null
+        rm -rf ${OUTPUT}/* 2>/dev/null
         echo "Running lexical analysis tests..."
         python3 main.py test LexerSuite
         ;;
     parser)
         # Execute syntax analyzer tests
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
+        rm -rf ${INPUT}/* 2>/dev/null
+        rm -rf ${OUTPUT}/* 2>/dev/null
         echo "Running syntax analysis tests..."
         python3 main.py test ParserSuite
         ;;
     ast)
         # Execute abstract syntax tree generation tests
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
+        rm -rf ${INPUT}/* 2>/dev/null
+        rm -rf ${OUTPUT}/* 2>/dev/null
         echo "Running AST generation tests..."
         python3 main.py test ASTGenSuite
         ;;
     semantic)
         # Execute semantic analysis tests
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
+        rm -rf ${INPUT}/* 2>/dev/null
+        rm -rf ${OUTPUT}/* 2>/dev/null
         echo "Running semantic analysis tests..."
         python3 main.py test CheckSuite
         ;;
     codegen)
         # Execute code generation tests
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
+        rm -rf ${INPUT}/* 2>/dev/null
+        rm -rf ${OUTPUT}/* 2>/dev/null
         echo "Running code generation tests..."
         python3 main.py test CodeGenSuite
         ;;
     all)
         # Execute all unit tests
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
+        rm -rf ${INPUT}/* 2>/dev/null
+        rm -rf ${OUTPUT}/* 2>/dev/null
         echo "<<< RUNNING ALL TESTS >>>"
         echo ""
         echo "Running lexical analysis tests..."
@@ -92,8 +92,8 @@ case "$1" in
     clean)
         # Remove all test artifacts from directories
         clear
-        rm -f ${INPUT}/* 2>/dev/null
-        rm -f ${OUTPUT}/* 2>/dev/null
+        rm -rf ${INPUT}/* 2>/dev/null
+        rm -rf ${OUTPUT}/* 2>/dev/null
         echo "Test artifacts removed from:"
         echo "- ${INPUT}"
         echo "- ${OUTPUT}"
