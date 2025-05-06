@@ -18,20 +18,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
           
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       
-      - name: Generate test files and clear screen
-        run: python main.py gen && clear
-      
-      - name: Clean test directories
+      - name: Run semantic analysis tests
         run: |
+          cd ~/MiniGo/src
+          python main.py gen && clear
           rm -f ./test/testcases/* 2>/dev/null
           rm -f ./test/solutions/* 2>/dev/null
-      
-      - name: Run semantic analysis tests
-        run: python main.py test CheckSuite
+          python main.py test CheckSuite
