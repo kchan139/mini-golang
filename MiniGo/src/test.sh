@@ -30,7 +30,7 @@ fi
 INPUT="./test/testcases"  # Directory containing input test files
 OUTPUT="./test/solutions"  # Directory containing expected outputs
 
-python main.py gen && clear
+python3 main.py gen && clear
 # Process command line argument and execute the appropriate action
 case "$1" in
     lexer)
@@ -38,35 +38,35 @@ case "$1" in
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running lexical analysis tests..."
-        python main.py test LexerSuite
+        python3 main.py test LexerSuite
         ;;
     parser)
         # Execute syntax analyzer tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running syntax analysis tests..."
-        python main.py test ParserSuite
+        python3 main.py test ParserSuite
         ;;
     ast)
         # Execute abstract syntax tree generation tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running AST generation tests..."
-        python main.py test ASTGenSuite
+        python3 main.py test ASTGenSuite
         ;;
     semantic)
         # Execute semantic analysis tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running semantic analysis tests..."
-        python main.py test CheckSuite
+        python3 main.py test CheckSuite
         ;;
     codegen)
         # Execute code generation tests
         rm -f ${INPUT}/* 2>/dev/null
         rm -f ${OUTPUT}/* 2>/dev/null
         echo "Running code generation tests..."
-        python main.py test CodeGenSuite
+        python3 main.py test CodeGenSuite
         ;;
     all)
         # Execute all unit tests
@@ -75,19 +75,19 @@ case "$1" in
         echo "<<< RUNNING ALL TESTS >>>"
         echo ""
         echo "Running lexical analysis tests..."
-        python main.py test LexerSuite
+        python3 main.py test LexerSuite
         echo ""
         echo "Running syntax analysis tests..."
-        python main.py test ParserSuite
+        python3 main.py test ParserSuite
         echo ""
         echo "Running AST generation tests..."
-        python main.py test ASTGenSuite
+        python3 main.py test ASTGenSuite
         echo ""
         echo "Running semantic analysis tests..."
-        python main.py test CheckSuite
+        python3 main.py test CheckSuite
         echo ""
         echo "Running code generation tests..."
-        python main.py test CodeGenSuite
+        python3 main.py test CodeGenSuite
         ;;
     clean)
         # Remove all test artifacts from directories
