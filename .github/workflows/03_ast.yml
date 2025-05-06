@@ -27,7 +27,7 @@ jobs:
       
       - name: Run AST generation tests
         run: |
-          cd ~/MiniGo/src
+          cd MiniGo/src
           python main.py gen && clear
           rm -f ./test/testcases/* 2>/dev/null
           rm -f ./test/solutions/* 2>/dev/null
