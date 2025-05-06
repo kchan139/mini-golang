@@ -25,14 +25,19 @@ class CodeGenerator(BaseVisitor,Utils):
         self.list_function = []
 
     def init(self):
-        mem = [
-            Symbol("putInt", MType([IntType()], VoidType()), CName("io", True)),
-            Symbol("putIntLn", MType([IntType()], VoidType()), CName("io", True)),
-            Symbol("putFloat", MType([FloatType()], VoidType()), CName("io", True)),
-            Symbol("putFloatLn", MType([FloatType()], VoidType()), CName("io", True)),
-           ## TODO implement
+        return [
+            Symbol("getInt", MType(list(), IntType()), CName(self.libName)),
+            Symbol("putInt", MType([IntType()], VoidType()), CName(self.libName)),
+            Symbol("putIntLn", MType([IntType()], VoidType()), CName(self.libName)),
+            Symbol("getFloat", MType([], FloatType()), CName(self.libName)),
+            Symbol("putFloat", MType([FloatType()], VoidType()), CName(self.libName)),
+            Symbol("putFloatLn", MType([FloatType()], VoidType()), CName(self.libName)),
+            Symbol("putBool", MType([BoolType()], VoidType()), CName(self.libName)),
+            Symbol("putBoolLn", MType([BoolType()], VoidType()), CName(self.libName)),
+            Symbol("putString", MType([StringType()], VoidType()), CName(self.libName)),
+            Symbol("putStringLn", MType([StringType()], VoidType()), CName(self.libName)),
+            Symbol("putLn", MType([], VoidType()), CName(self.libName)),
         ]
-        return mem
 
     def gen(self, ast, dir_):
         gl = self.init()
