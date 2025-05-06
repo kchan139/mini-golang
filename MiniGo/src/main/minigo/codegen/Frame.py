@@ -1,4 +1,5 @@
-from Utils import *
+#from Utils import *
+from CodeGenError import *
 
 class Frame():
     def __init__(self, name, returnType):
@@ -75,6 +76,8 @@ class Frame():
     *   Then, these labels are pushed onto corresponding stacks.<p>
     *   These labels can be retrieved by getStartLabel() and getEndLabel().<p>
     *   In addition, this method also saves the current index of local variable.
+    *   Parameters:
+    *   - isProc: True when the scope is of a function/method/procedure and False when the scope is of a block statement
     '''
 
     def enterScope(self, isProc):
@@ -171,6 +174,6 @@ class Frame():
     *   @return an integer representing the break label
     '''
     def getBreakLabel(self):
-        if not brkLabel:
+        if not self.brkLabel:
             raise IllegalRuntimeException("None break label")
         return self.brkLabel[-1]
