@@ -150,8 +150,15 @@ class Emitter():
             return self.jvm.emitAASTORE()
         raise IllegalOperandException(str(in_))
 
-    def emitVAR(self, in_: int, varName: str, inType: Type, fromLabel: int, toLabel: int, frame: Frame):
-        return self.jvm.emitVAR(in_, varName, self.getJVMType(inType), fromLabel, toLabel)
+    def emitVAR(self, in_: int, varName: str, inType: Type, fromLabel: int, toLabel: int, _: Frame):
+        if isinstance(inType, str):
+            typeStr = inType  # Already a string, use as is
+        elif isinstance(inType, ClassType):
+            typeStr = "L" + inType.cname + ";"  # Format class type correctly
+        else:
+            typeStr = self.getJVMType(inType)  # Use existing method for other types
+        
+        return f".var {in_} is {varName} {typeStr} from {fromLabel} to {toLabel}\n"
 
     def emitREADVAR(self, name: str, inType: Type, index: int, frame: Frame):
         frame.push()
