@@ -454,7 +454,7 @@ class CodeGenerator(BaseVisitor,Utils):
     def visitArrayCell(self, ast: ArrayCell, o: dict) -> tuple[str, Type]:
         newO = o.copy()
         newO['isLeft'] = False
-        codeGen, arrType = self.visit(ast.expr, newO)
+        codeGen, arrType = self.visit(ast.arr, newO)
 
         for idx, item in enumerate(ast.idx):
             codeGen += self.visit(item, newO)[0]
