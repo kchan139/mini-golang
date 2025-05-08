@@ -91,7 +91,11 @@ class Emitter():
         SIPUSH_MIN = -32768
         SIPUSH_MAX = 32767
 
-        if type(in_) is int:
+        if isinstance(in_, bool):
+            actual_val = 1 if in_ else 0
+            return self.jvm.emitICONST(actual_val)
+
+        if isinstance(in_, int):
             if ICONST_MIN <= in_ <= ICONST_MAX:
                 return self.jvm.emitICONST(in_)
             if BIPUSH_MIN <= in_ <= BIPUSH_MAX:
@@ -100,11 +104,20 @@ class Emitter():
                 return self.jvm.emitSIPUSH(in_)
             
         if type(in_) is str:
-            if in_ == "true":
+            str_val_lower = in_.lower()
+            if str_val_lower == "true":
                 return self.emitPUSHICONST(1, frame)
-            if in_ == "false":
-                return self.emitPUSHICONST(0, frame)            
-            return self.emitPUSHICONST(int(in_), frame)
+            if str_val_lower == "false":
+                return self.emitPUSHICONST(0, frame)
+            
+            try:
+                numeric_val = int(in_)
+                return self.emitPUSHICONST(numeric_val, frame)
+            except ValueError:
+                raise IllegalOperandException(f"String operand '{in_}' cannot be pushed as an iconst.")
+
+        raise IllegalOperandException(f"Unsupported type '{type(in_)}' for PUSHICONST with value '{in_}'.")
+
 
     def emitPUSHFCONST(self, in_: str, frame: Frame):
         value = float(in_)
@@ -152,11 +165,11 @@ class Emitter():
 
     def emitVAR(self, in_: int, varName: str, inType: Type, fromLabel: int, toLabel: int, _: Frame):
         if isinstance(inType, str):
-            typeStr = inType  # Already a string, use as is
+            typeStr = inType
         elif isinstance(inType, ClassType):
-            typeStr = "L" + inType.cname + ";"  # Format class type correctly
+            typeStr = "L" + inType.cname + ";"
         else:
-            typeStr = self.getJVMType(inType)  # Use existing method for other types
+            typeStr = self.getJVMType(inType)
         
         return f".var {in_} is {varName} {typeStr} from {fromLabel} to {toLabel}\n"
 
@@ -335,10 +348,25 @@ class Emitter():
                 result.append(self.jvm.emitFCMPL())
                 result.append(self.jvm.emitIFNE(false_label))
 
-        result.append(self.emitPUSHCONST("1", IntType(), frame))
+        elif type(in_) is StringType:
+            if op == "==":
+                result.append(self.jvm.emitIFICMPNE(false_label))
+            elif op == "!=":
+                result.append(self.jvm.emitIFICMPEQ(false_label))
+            elif op == "<":
+                result.append(self.jvm.emitIFICMPGE(false_label))
+            elif op == "<=":
+                result.append(self.jvm.emitIFICMPGT(false_label))
+            elif op == ">":
+                result.append(self.jvm.emitIFICMPLE(false_label))
+            elif op == ">=":
+                result.append(self.jvm.emitIFICMPLT(false_label))
+
+        result.append(self.emitPUSHICONST(1, frame))
         result.append(self.emitGOTO(end_label, frame))
         result.append(self.emitLABEL(false_label, frame))
-        result.append(self.emitPUSHCONST("0", IntType(), frame))
+
+        result.append(self.emitPUSHICONST(0, frame))
         result.append(self.emitLABEL(end_label, frame))
         return ''.join(result)
 
