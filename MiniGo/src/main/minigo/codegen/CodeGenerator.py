@@ -130,24 +130,6 @@ class CodeGenerator(BaseVisitor,Utils):
         self.emit.printout(self.emit.emitENDMETHOD(frame))  
         frame.exitScope()
 
-        # frame = Frame("<cinit>", VoidType())  
-        # self.emit.printout(self.emit.emitMETHOD("<clinit>", MType([], VoidType()), True, frame)) 
-        # frame.enterScope(True)  
-        # self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
-
-        # env['frame'] = frame
-
-        # #Trừ đoạn code dưới đây thì còn lại giống emitObjectInit:
-        # self.visit(Block([
-        #     #  Assign(#TODO ...) for item in ast.decl if isinstance(item, (VarDecl, ConstDecl))       => Block chứa danh sách các Assign
-        # ]), env)
-        # # Đoạn này nạp mấy biến/hằng toàn cục vào lớp MiniGoClass
-
-        # self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
-        # self.emit.printout(self.emit.emitRETURN(VoidType(), frame))  
-        # self.emit.printout(self.emit.emitENDMETHOD(frame))  
-        # frame.exitScope()
-
     def visitProgram(self, ast: Program, c):
         # Biến c ban đầu là dãy Symbol "mem" ở hàm init() ở trên, chứa các hàm builtin của minigo.
 
@@ -243,9 +225,11 @@ class CodeGenerator(BaseVisitor,Utils):
         o['env'][0].append(Symbol(ast.parName, ast.parType, Index(index)))
         self.emit.printout(self.emit.emitVAR(index, ast.parName, ast.parType, frame.getStartLabel() ,frame.getEndLabel(), frame))     
         return o
+    
+    def visitConstDecl(self, ast:ConstDecl, o: dict) -> dict:
+        return self.visit(VarDecl(ast.conName, ast.conType, ast.iniExpr), o)
 
     def visitVarDecl(self, ast: VarDecl, o: dict) -> dict:
-        
 
         def create_init(varType: Type, o: dict):
             if type(varType) is IntType:
@@ -257,50 +241,50 @@ class CodeGenerator(BaseVisitor,Utils):
             elif type(varType) is BoolType:
                 return BooleanLiteral("false")
             elif type(varType) is ArrayType:
-                # Not implementing array for level 1
-                pass
+                # Create default-initialized array based on dimensions and element type
+                if all(isinstance(d, int) for d in varType.dimens):
+                    zero_val = create_init(varType.eleType, o)
+                    if len(varType.dimens) == 1:
+                        return ArrayLiteral([zero_val] * varType.dimens[0])
+                    # For multidimensional arrays, would need recursive building
+                return None  # Handle dynamic arrays at runtime
 
+        varInit = ast.varInit
+        varType = ast.varType
 
-        varInit = ast.varInit # Giá trị khởi tạo của biến
-        varType = ast.varType # Kiểu của biến
-
-        #Nếu không có giá trị khởi tạo thì tự động gán cho nó 0, 0.0, false, "",..tùy vào kiểu biến:
-        # int -> 0, float -> 0.0, bool -> false, string -> "", array -> mảng chứa các giá trị "zero" tùy thuộc vào kiểu phần tử.
         if not varInit:
             varInit = create_init(varType, o)
-            if type(varType) is ArrayType:
-                varInit = ArrayLiteral(varType.dimens, varType.dimens, varInit)
-            ast.varInit = varInit
+            if type(varType) is ArrayType and varInit:
+                ast.varInit = varInit
 
-
-            ast.varInit = varInit
         env = o.copy()
         env['frame'] = Frame("<template_VT>", VoidType()) 
 
-        # Như đã nói trong lưu ý ở trên thì trường hợp dimension là Id hay biểu thức sẽ đc xử lí ở visitArrayLiteral và là dòng dưới đây
-        rhsCode, rhsType = self.visit(varInit, env)
+        if varInit:
+            rhsCode, rhsType = self.visit(varInit, env)
+        else:
+            rhsCode, rhsType = "", None
 
-        #Trường hợp khai báo với giá trị nhưng không có kiẻu thì mình sẽ tự động gán kiểu cho nó dựa vào giá trị khởi tạo.
         if not varType:
             varType = rhsType
 
-        if 'frame' not in o: # TH global var => biến khai báo toàn cục thì mình
+        if 'frame' not in o:  # Global variable
             o['env'][0].append(Symbol(ast.varName, varType, CName(self.className)))
             self.emit.printout(self.emit.emitATTRIBUTE(ast.varName, varType, True, False, None))
-        else:
+        else:  # Local variable
             frame = o['frame']
-
             index = frame.getNewIndex()
-            o['env'][0].append(Symbol(ast.varName, varType, Index(index))) # mỗi trường sẽ có 1 index riêng
-
+            o['env'][0].append(Symbol(ast.varName, varType, Index(index)))
 
             self.emit.printout(self.emit.emitVAR(index, ast.varName, varType, frame.getStartLabel(), frame.getEndLabel(), frame))  
-            rhsCode, rhsType = self.visit(varInit, o)
-            if type(varType) is FloatType and type(rhsType) is IntType:
-                rhsCode = rhsCode + self.emit.emitI2F(frame)
-                  
-            self.emit.printout(rhsCode)
-            self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame)) # sinh mã gán giá trị vào biến                   
+            
+            if varInit:
+                rhsCode, rhsType = self.visit(varInit, o)
+                if type(varType) is FloatType and type(rhsType) is IntType:
+                    rhsCode += self.emit.emitI2F(frame)
+                self.emit.printout(rhsCode)
+                self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame))
+                    
         return o
     
     def visitFuncCall(self, ast: FuncCall, o: dict) -> dict:
@@ -357,16 +341,11 @@ class CodeGenerator(BaseVisitor,Utils):
             return self.emit.emitGETSTATIC(f"{sym.value.value}/{ast.name}", sym.mtype, o['frame']), sym.mtype
 
     def visitAssign(self, ast: Assign, o: dict) -> dict:
-
-        #Xem thử là biến này đã được khai báo chưa, trong minigo nếu phép gán mà biến chưa được khai báo thì sẽ tự động khai báo nó luôn.
         if type(ast.lhs) is Id and not next(filter(lambda x: x.name == ast.lhs.name, [j for i in o['env'] for j in i]), None):
             return self.visit(VarDecl(ast.lhs.name, None, ast.rhs), o)
         
-
         rhsCode, rhsType = self.visit(ast.rhs, o)
 
-        #Trước khi duyệt vế trái (có thể chạy vào hàm visitId ở trên) thì mình bật biến cờ isLeft, duyệt xong thì tắt nó đi.
-        #Biến cờ này dùng để xác định xem mình đang ở vế trái hay vế phải của phép gán, từ đó mà sinh mã cho đúng.
         o['isLeft'] = True
         lhsCode, lhsType = self.visit(ast.lhs, o)
         o['isLeft'] = False
@@ -374,14 +353,12 @@ class CodeGenerator(BaseVisitor,Utils):
         if type(lhsType) is FloatType and type(rhsType) is IntType:
             rhsCode = rhsCode + self.emit.emitI2F(o['frame'])
         
-
-        # Khúc array cell này task 3
-        o['frame'].push() # Tăng kích thước stack lên 1 đơn vị, vì mình sẽ dùng stack để lưu trữ giá trị của biến này.
-                
-        # Not implementing array for level 1
+        o['frame'].push()
+                    
         if type(ast.lhs) is ArrayCell:
-            pass
-        # access id
+            self.emit.printout(lhsCode)
+            self.emit.printout(rhsCode)
+            self.emit.printout(self.emit.emitASTORE(self.arrayCell, o['frame']))
         else:
             self.emit.printout(rhsCode)
             self.emit.printout(lhsCode)
@@ -471,20 +448,89 @@ class CodeGenerator(BaseVisitor,Utils):
     def visitStringLiteral(self, ast: StringLiteral, o: dict) -> tuple[str, Type]:
         return self.emit.emitPUSHCONST(ast.value, StringType(), o['frame']), StringType()
     
-    ## TODO END basic expression ------------------------------
+    ## END basic expression ------------------------------
 
     ## TODO array ------------------------------
     def visitArrayCell(self, ast: ArrayCell, o: dict) -> tuple[str, Type]:
-        # Not implementing array for level 1
-        pass
+        newO = o.copy()
+        newO['isLeft'] = False
+        codeGen, arrType = self.visit(ast.expr, newO)
 
-    def visitArrayLiteral(self, ast:ArrayLiteral , o: dict) -> tuple[str, Type]:
-        # Not implementing array for level 1
-        pass
+        for idx, item in enumerate(ast.idx):
+            codeGen += self.visit(item, newO)[0]
+            if idx != len(ast.idx) - 1:
+                codeGen += self.emit.emitALOAD(arrType, o['frame'])
 
-    def visitConstDecl(self, ast:ConstDecl, o: dict) -> dict:
-        return self.visit(VarDecl(ast.conName, ast.conType, ast.iniExpr), o)
+        retType = None
+        if len(arrType.dimens) == len(ast.idx):
+            retType = arrType.eleType
+            if not o.get('isLeft'):
+                codeGen += self.emit.emitALOAD(retType, o['frame'])
+            else:
+                self.arrayCell = retType
+        else:
+            retType = ArrayType(arrType.dimens[len(ast.idx):], arrType.eleType)
+            if not o.get('isLeft'):
+                codeGen += self.emit.emitALOAD(retType, o['frame'])
+            else:
+                self.arrayCell = retType
+
+        return codeGen, arrType
+
+    def visitArrayLiteral(self, ast: ArrayLiteral , o: dict) -> tuple[str, Type]:
+
+        def nested_recursive(value, o: dict) -> tuple[str, Type]:
+            if not isinstance(value, list):
+                return self.visit(value, o)
+
+            frame = o['frame']
+            codeGen = self.emit.emitPUSHICONST(len(value), frame)
+
+            if not isinstance(value[0], list):
+                _, type_element_array = self.visit(value[0], o)
+                if type(type_element_array) is IntType:
+                    codeGen += self.emit.emitNEWARRAY("int", frame)
+                elif type(type_element_array) is FloatType:
+                    codeGen += self.emit.emitNEWARRAY("float", frame)
+                elif type(type_element_array) is BoolType:
+                    codeGen += self.emit.emitNEWARRAY("boolean", frame)
+                else:
+                    codeGen += self.emit.emitANEWARRAY(type_element_array, frame)
+
+                for idx, item in enumerate(dat):
+                    codeGen += self.emit.emitDUP(frame)
+                    codeGen += self.emit.emitPUSHICONST(idx, frame)
+                    item_code, _ = self.visit(item, o)
+                    codeGen += item_code
+                    codeGen += self.emit.emitASTORE(type_element_array, frame)
+                return codeGen, ArrayType([len(dat)], type_element_array)
+    
+            else:
+                _, type_element_array = nested_recursive(dat[0], o)
+                codeGen += self.emit.emitANEWARRAY(type_element_array, frame)
+
+                for idx, item in enumerate(dat):
+                    codeGen += self.emit.emitDUP(frame)
+                    codeGen += self.emit.emitPUSHICONST(idx, frame)
+                    item_code, _ = nested_recursive(item, o)
+                    codeGen += item_code
+                    codeGen += self.emit.emitASTORE(type_element_array, frame)
+                
+                dimen = [len(dat)]
+                if type(type_element_array) is ArrayType:
+                    dimen = dimen + type_element_array.dimens
+                    return codeGen, ArrayType(dimen, type_element_array.eleType)
+                else:
+                    return codeGen, ArrayType(dimen, type_element_array)
+        
+        return nested_recursive(ast.value, o)
     
     def visitArrayType(self, ast:ArrayType, o):
-        # Not implementing array for level 1
-        pass
+        codeGen = ""
+        for dimen in ast.dimens:
+            dimen_code, _ = self.visit(dimen, o)
+            codeGen += dimen_code
+        codeGen += self.emit.emitMULTIANEWARRAY(ast, o['frame'])
+        return codeGen, ast
+
+    
