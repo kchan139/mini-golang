@@ -11,13 +11,13 @@ from AST import *
 class CodeGenerator(BaseVisitor,Utils):
     def __init__(self):
         # 
-        self.className = "MiniGoClass" # Tên class tổng của chương trình minigo
+        self.className = "MiniGoClass"
         self.astTree = None
         self.path = None
         self.emit = None
         self.function = None
         self.list_function = []
-        self.arrayCell = None # Dùng để lưu kiểu của mảng khi duyệt vào 1 ArrayCell
+        self.arrayCell = None
         self.arrayCellType = None
 
     def init(self):
@@ -38,14 +38,11 @@ class CodeGenerator(BaseVisitor,Utils):
         return mem
 
     def gen(self, ast, dir_):
-        # Nơi được gọi để khởi tạo classCodeGen và bắt đầu sinh mã !!!
         gl = self.init()
         self.astTree = ast
         self.path = dir_
         self.emit = Emitter(dir_ + "/" + self.className + ".j")
         self.visit(ast, gl)
-
-
 
     ### Vì chương trình của mình sẽ xem như nằm trong 1 class duy nhất trong java, cụ thể là MiniGoClass
     ### Nên mình sẽ định nghĩa 2 phương thức <init> và <clinit> trong class này bằng 2 phương thức emitObjectInit và emitObjectCInit
@@ -79,32 +76,23 @@ class CodeGenerator(BaseVisitor,Utils):
 
     def emitObjectInit(self):
         frame = Frame("<init>", VoidType())  
-        self.emit.printout(self.emit.emitMETHOD("<init>", MType([], VoidType()), False, frame))  # Bắt đầu định nghĩa phương thức <init>
-        # sinh ra mã => .method public <init>()V
-        frame.enterScope(True)  # Mỗi hàm có 1 frame riêng, và mỗi frame có 1 scope riêng, nên dùng enterScope để vào scope của frame này
+        self.emit.printout(self.emit.emitMETHOD("<init>", MType([], VoidType()), False, frame))
+        
+        frame.enterScope(True)
 
-        # self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "this", ClassType(self.className), frame.getStartLabel(), frame.getEndLabel(), frame))  # Tạo biến "this" trong phương thức <init>
-        # sinh ra mã => .var 0 is this LMiniGoClass; from Label0 to Label1
         self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "this", f"L{self.className};", frame.getStartLabel(), frame.getEndLabel(), frame))
 
         self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
-        # sinh ra mã => Label0: (nơi body method bắt đầu)
-
+        
         self.emit.printout(self.emit.emitREADVAR("this", ClassType(self.className), 0, frame)) 
-        # sinh ra mã => aload_0 (đưa biến this vào stack)
-
+        
         self.emit.printout(self.emit.emitINVOKESPECIAL(frame))
-        # sinh ra mã => invokespecial java/lang/Object/<init>()V (gọi hàm khởi tạo của class cha là Object)  
-     
+        
         self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
-        # sinh ra mã => Label1: (nơi body method kết thúc)
-
-
+        
         self.emit.printout(self.emit.emitRETURN(VoidType(), frame))  
-        # sinh ra mã => return (trả về từ hàm khởi tạo này)
 
         self.emit.printout(self.emit.emitENDMETHOD(frame))  
-        # sinh ra mã limit stack 1, limit locals 1, end method (kết thúc định nghĩa phương thức <init>)
 
         frame.exitScope()  
 
@@ -131,49 +119,26 @@ class CodeGenerator(BaseVisitor,Utils):
         frame.exitScope()
 
     def visitProgram(self, ast: Program, c):
-        # Biến c ban đầu là dãy Symbol "mem" ở hàm init() ở trên, chứa các hàm builtin của minigo.
-
         self.list_function = c + [Symbol(item.name, MType(list(map(lambda x: x.parType, item.params)), item.retType), CName(self.className)) for item in ast.decl if isinstance(item, FuncDecl)]
-        # Đoạn này nạp mấy hàm vào list_function, biến tụi nó thành Symbol để quản lí
-        
+
         env = {}
         env['env'] = [c]
 
-
         self.emit.printout(self.emit.emitPROLOG(self.className, "java.lang.Object"))
-        # sinh ra mã => .source MiniGoClass.java
-        #               .class public MiniGoClass
-        #               .super java.lang.Object
-
-
-        # Đoạn sau sinh mã cho khai báo biến và khai báo báo hàm:
-        ## 1. Khai báo biến (duyệt trước vì hàm có thể dùng biến toàn cục, cập nhật biến/hằng toàn cục vào env)
+        
         env = reduce(lambda a, x: self.visit(x, a) if isinstance(x, VarDecl) or  isinstance(x, ConstDecl) else a, ast.decl, env)
-
-        ## 2. Khai báo hàm (gọi hàm visitFuncDecl cho từng hàm trong danh sách hàm trong ast.decl)
         reduce(lambda a, x: self.visit(x, a) if isinstance(x, FuncDecl) else a, ast.decl, env)
-
-
-
-        # Gọi mấy hàm đã định nghĩa ở trên
+        
         self.emitObjectInit()
         self.emitObjectCInit(ast, env)
-
-
         self.emit.printout(self.emit.emitEPILOG())
-        #Không sinh ra mã gì cả, chỉ là kết thúc chương trình thôi
-
 
         return env
     
     def visitFuncDecl(self, ast: FuncCall, o: dict) -> dict:
-
-        #Lưu function đang duyệt vào biến self.function để dùng sau
         self.function = ast
-
         frame = Frame(ast.name, ast.retType)
 
-        #Với hàm main thì có params và return cố định như bên dưới, này được định nghĩa trong spec:
         isMain = ast.name == "main"
         if isMain:
             mtype = MType([ArrayType([None],StringType())], VoidType())
@@ -181,42 +146,27 @@ class CodeGenerator(BaseVisitor,Utils):
         else:
             mtype = MType(list(map(lambda x: x.parType, ast.params)), ast.retType)
         
-
         env = o.copy()
         env['frame'] = frame
         self.emit.printout(self.emit.emitMETHOD(ast.name, mtype,True, frame))
-        # sinh ra mã => .method public static main([Ljava/lang/String;)V đối với hàm main
-
-        # Tiếp theo nhảy vào body hàm:
+        
         frame.enterScope(True)
         self.emit.printout(self.emit.emitLABEL(frame.getStartLabel(), frame))
         env['env'] = [[]] + env['env']
-        # Lưu ý: mình đang dùng field env của env để lưu reference.
-
-        # Sinh mã VAR tùy vào hàm có phải main hay không, đồng thời cũng cập nhật biến env['env'] với các tham số của hàm:
+        
         if isMain:
             self.emit.printout(self.emit.emitVAR(frame.getNewIndex(), "args", ArrayType([None],StringType()), frame.getStartLabel(), frame.getEndLabel(), frame))
         else:
             env = reduce(lambda acc,e: self.visit(e,acc),ast.params,env)
 
-        #Gọi hàm visitBlock, truyền env đã được cập nhật scope params.
         self.visit(ast.body,env)
-
-
         self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
-
 
         if type(ast.retType) is VoidType:
             self.emit.printout(self.emit.emitRETURN(VoidType(), frame)) 
-        #Nếu trả về kiểu khác void thì hàm visitBlock đã sinh mã cho return rồi.
-
+        
         self.emit.printout(self.emit.emitENDMETHOD(frame))
-
-
         frame.exitScope()
-        # Kết thúc thân hàm
-
-
         return o
 
     def visitParamDecl(self, ast: ParamDecl, o: dict) -> dict:
@@ -230,7 +180,6 @@ class CodeGenerator(BaseVisitor,Utils):
         return self.visit(VarDecl(ast.conName, ast.conType, ast.iniExpr), o)
 
     def visitVarDecl(self, ast: VarDecl, o: dict) -> dict:
-
         def create_init(varType: Type, o: dict):
             if type(varType) is IntType:
                 return IntLiteral(0)
@@ -241,50 +190,67 @@ class CodeGenerator(BaseVisitor,Utils):
             elif type(varType) is BoolType:
                 return BooleanLiteral("false")
             elif type(varType) is ArrayType:
-                # Create default-initialized array based on dimensions and element type
                 if all(isinstance(d, int) for d in varType.dimens):
                     zero_val = create_init(varType.eleType, o)
                     if len(varType.dimens) == 1:
-                        return ArrayLiteral([zero_val] * varType.dimens[0])
-                    # For multidimensional arrays, would need recursive building
-                return None  # Handle dynamic arrays at runtime
+                        return ArrayLiteral([varType.dimens[0]], varType.eleType, [zero_val] * varType.dimens[0])
+                    
+                return None
 
         varInit = ast.varInit
         varType = ast.varType
 
-        if not varInit:
-            varInit = create_init(varType, o)
-            if type(varType) is ArrayType and varInit:
-                ast.varInit = varInit
-
         env = o.copy()
-        env['frame'] = Frame("<template_VT>", VoidType()) 
+        temp_frame = Frame("<template_VT>", VoidType())
+        temp_env = {'env': env['env'], 'frame': temp_frame}
 
-        if varInit:
-            rhsCode, rhsType = self.visit(varInit, env)
-        else:
-            rhsCode, rhsType = "", None
 
-        if not varType:
-            varType = rhsType
+        if 'frame' not in o:
+            if not varType and varInit:
+                _, varType = self.visit(varInit, temp_env)
+            
+            elif not varType:
+                pass
 
-        if 'frame' not in o:  # Global variable
             o['env'][0].append(Symbol(ast.varName, varType, CName(self.className)))
-            self.emit.printout(self.emit.emitATTRIBUTE(ast.varName, varType, True, False, None))
-        else:  # Local variable
+
+        else:
             frame = o['frame']
+            if not varType and varInit:
+                _, varType = self.visit(varInit, {'env':o['env'], 'frame': frame}) # Use the actual frame for visiting initializer
+            
+            elif not varType:
+                pass
+
+
             index = frame.getNewIndex()
             o['env'][0].append(Symbol(ast.varName, varType, Index(index)))
+            self.emit.printout(self.emit.emitVAR(index, ast.varName, varType, frame.getStartLabel(), frame.getEndLabel(), frame))
 
-            self.emit.printout(self.emit.emitVAR(index, ast.varName, varType, frame.getStartLabel(), frame.getEndLabel(), frame))  
-            
             if varInit:
-                rhsCode, rhsType = self.visit(varInit, o)
+                rhsCode, rhsType = self.visit(varInit, {'env':o['env'], 'frame': frame}) # Use the actual frame for visiting initializer
                 if type(varType) is FloatType and type(rhsType) is IntType:
                     rhsCode += self.emit.emitI2F(frame)
                 self.emit.printout(rhsCode)
                 self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame))
-                    
+            elif type(varType) is ArrayType: # Added array allocation for local arrays without initializer
+                # Generate code to allocate the array
+                dim_codes = []
+                for dim_expr in varType.dimens:
+                    dim_code, _ = self.visit(dim_expr, {'env':o['env'], 'frame': frame})
+                    dim_codes.append(dim_code)
+
+                self.emit.printout("".join(dim_codes))
+
+                if len(varType.dimens) == 1:
+                    self.emit.printout(self.emit.emitNEWARRAY(varType.eleType, frame))
+                else:
+                    self.emit.printout(self.emit.emitMULTIANEWARRAY(varType, frame))
+
+                # Store the allocated array reference in the local variable
+                self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame))
+
+
         return o
     
     def visitFuncCall(self, ast: FuncCall, o: dict) -> dict:
@@ -417,15 +383,44 @@ class CodeGenerator(BaseVisitor,Utils):
         if op in ['||']:
             return codeLeft + codeRight + self.emit.emitOROP(frame), BoolType()
         if op in ['&&']:
-            return codeLeft + codeRight + self.emit.emitANDOP(frame), BoolType()  # Lấy này làm vd làm mấy cái ở trên
+            return codeLeft + codeRight + self.emit.emitANDOP(frame), BoolType()
 
-        # nối string string        
         if op in ['+'] and type(typeLeft) is StringType:
             return codeLeft + codeRight + self.emit.emitINVOKEVIRTUAL("java/lang/String/concat", MType([StringType()], StringType()), frame), StringType()
-        if op in ['==', '!=', '<', '>', '>=', '<='] and type(typeLeft) is StringType:
+
+        if op in ['==', '!=', '<', '>', '>=', '<=',] and type(typeLeft) is StringType:
             code = codeLeft + codeRight + self.emit.emitINVOKEVIRTUAL("java/lang/String/compareTo", MType([StringType()], IntType()), frame)
-            code = code + self.emit.emitREOP(op, IntType(), frame)
-            return code, BoolType()    
+            
+            false_label = frame.getNewLabel()
+            end_label = frame.getNewLabel()
+
+            if op == "==":
+                code += self.emit.emitIFICMPNE(false_label, o['frame'])
+            elif op == "!=":
+                code += self.emit.emitIFICMPEQ(false_label, o['frame'])
+            elif op == "<":
+                code += self.emit.emitIFICMPGE(false_label, o['frame'])
+            elif op == "<=":
+                code += self.emit.emitIFICMPGT(false_label, o['frame'])
+            elif op == ">":
+                code += self.emit.emitIFLE(false_label, o['frame'])
+            elif op == ">=":
+                code += self.emit.emitIFLT(false_label, o['frame'])
+
+            frame.pop()
+            
+            code += self.emit.emitPUSHCONST("1", BoolType(), frame)[0]
+            frame.push()
+            
+            code += self.emit.emitGOTO(end_label, frame)
+            code += self.emit.emitLABEL(false_label, frame)
+
+            code += self.emit.emitPUSHCONST("0", BoolType(), frame)[0]
+            frame.push()
+            
+            code += self.emit.emitLABEL(end_label, frame)
+
+            return code, BoolType()
               
     def visitUnaryOp(self, ast: UnaryOp, o: dict) -> tuple[str, Type]:
         if ast.op == '!':
@@ -459,71 +454,97 @@ class CodeGenerator(BaseVisitor,Utils):
         for idx, item in enumerate(ast.idx):
             codeGen += self.visit(item, newO)[0]
             if idx != len(ast.idx) - 1:
-                codeGen += self.emit.emitALOAD(arrType, o['frame'])
+                codeGen += self.emit.emitALOAD(arrType, o['frame']) # ALOAD for intermediate dimensions
 
         retType = None
         if len(arrType.dimens) == len(ast.idx):
             retType = arrType.eleType
             if not o.get('isLeft'):
-                codeGen += self.emit.emitALOAD(retType, o['frame'])
+                codeGen += self.emit.emitALOAD(retType, o['frame']) # ALOAD for the final element
             else:
-                self.arrayCell = retType
+                self.arrayCell = retType # Store element type for ASTORE
         else:
             retType = ArrayType(arrType.dimens[len(ast.idx):], arrType.eleType)
             if not o.get('isLeft'):
-                codeGen += self.emit.emitALOAD(retType, o['frame'])
+                codeGen += self.emit.emitALOAD(retType, o['frame']) # ALOAD for a slice (sub-array)
             else:
-                self.arrayCell = retType
+                self.arrayCell = retType # Store slice type for ASTORE
 
-        return codeGen, arrType
+        return codeGen, retType # Return code to load the element/slice and its type
 
     def visitArrayLiteral(self, ast: ArrayLiteral , o: dict) -> tuple[str, Type]:
 
-        def nested_recursive(value, o: dict) -> tuple[str, Type]:
-            if not isinstance(value, list):
-                return self.visit(value, o)
+        def nested_recursive(current_value, context: dict) -> tuple[str, Type]:
+            if not isinstance(current_value, list):
+                return self.visit(current_value, context)
 
-            frame = o['frame']
-            codeGen = self.emit.emitPUSHICONST(len(value), frame)
-
-            if not isinstance(value[0], list):
-                _, type_element_array = self.visit(value[0], o)
-                if type(type_element_array) is IntType:
-                    codeGen += self.emit.emitNEWARRAY("int", frame)
-                elif type(type_element_array) is FloatType:
-                    codeGen += self.emit.emitNEWARRAY("float", frame)
-                elif type(type_element_array) is BoolType:
-                    codeGen += self.emit.emitNEWARRAY("boolean", frame)
+            frame = context['frame']
+            if not current_value:
+                code_gen = self.emit.emitPUSHICONST(0, frame)
+                element_type_for_newarray = ast.eleType
+                
+                if isinstance(element_type_for_newarray, (IntType, FloatType, BoolType)):
+                    code_gen += self.emit.emitNEWARRAY(element_type_for_newarray, frame)
                 else:
-                    codeGen += self.emit.emitANEWARRAY(type_element_array, frame)
+                    code_gen += self.emit.emitANEWARRAY(element_type_for_newarray, frame)
 
-                for idx, item in enumerate(dat):
-                    codeGen += self.emit.emitDUP(frame)
-                    codeGen += self.emit.emitPUSHICONST(idx, frame)
-                    item_code, _ = self.visit(item, o)
-                    codeGen += item_code
-                    codeGen += self.emit.emitASTORE(type_element_array, frame)
-                return codeGen, ArrayType([len(dat)], type_element_array)
+                return code_gen, ArrayType([0], element_type_for_newarray)
+
+            code_gen = self.emit.emitPUSHICONST(len(current_value), frame)
+            
+            first_element = current_value[0]
+            
+            if not isinstance(first_element, list):
+                _, type_of_elements = self.visit(first_element, context)
+
+                if isinstance(type_of_elements, IntType):
+                    code_gen += self.emit.emitNEWARRAY(type_of_elements, frame)
+                elif isinstance(type_of_elements, FloatType):
+                    code_gen += self.emit.emitNEWARRAY(type_of_elements, frame)
+                elif isinstance(type_of_elements, BoolType):
+                    code_gen += self.emit.emitNEWARRAY(type_of_elements, frame)
+                else:
+                    code_gen += self.emit.emitANEWARRAY(type_of_elements, frame)
+
+                for idx, item in enumerate(current_value):
+                    code_gen += self.emit.emitDUP(frame)
+                    code_gen += self.emit.emitPUSHICONST(idx, frame)
+                    item_code, item_type = self.visit(item, context)
+                    code_gen += item_code
+                    
+                    if isinstance(type_of_elements, FloatType) and isinstance(item_type, IntType):
+                        code_gen += self.emit.emitI2F(frame)
+                    code_gen += self.emit.emitASTORE(type_of_elements, frame)
+                
+                return code_gen, ArrayType([len(current_value)], type_of_elements)
     
             else:
-                _, type_element_array = nested_recursive(dat[0], o)
-                codeGen += self.emit.emitANEWARRAY(type_element_array, frame)
+                _, type_of_inner_array = nested_recursive(first_element, context)
 
-                for idx, item in enumerate(dat):
-                    codeGen += self.emit.emitDUP(frame)
-                    codeGen += self.emit.emitPUSHICONST(idx, frame)
-                    item_code, _ = nested_recursive(item, o)
-                    codeGen += item_code
-                    codeGen += self.emit.emitASTORE(type_element_array, frame)
+                code_gen += self.emit.emitANEWARRAY(type_of_inner_array, frame)
+
+                for idx, sub_list in enumerate(current_value):
+                    code_gen += self.emit.emitDUP(frame)
+                    code_gen += self.emit.emitPUSHICONST(idx, frame)
                 
-                dimen = [len(dat)]
-                if type(type_element_array) is ArrayType:
-                    dimen = dimen + type_element_array.dimens
-                    return codeGen, ArrayType(dimen, type_element_array.eleType)
+                    sub_array_code, _ = nested_recursive(sub_list, context)
+                    code_gen += sub_array_code
+                    code_gen += self.emit.emitASTORE(type_of_inner_array, frame)
+                
+                final_dimensions = [len(current_value)]
+                final_element_type = None
+
+                if isinstance(type_of_inner_array, ArrayType):
+                    final_dimensions.extend(type_of_inner_array.dimens)
+                    final_element_type = type_of_inner_array.eleType
                 else:
-                    return codeGen, ArrayType(dimen, type_element_array)
+                    final_element_type = type_of_inner_array 
+                    
+                    
+                return code_gen, ArrayType(final_dimensions, final_element_type)
         
         return nested_recursive(ast.value, o)
+
     
     def visitArrayType(self, ast:ArrayType, o):
         codeGen = ""
@@ -533,4 +554,242 @@ class CodeGenerator(BaseVisitor,Utils):
         codeGen += self.emit.emitMULTIANEWARRAY(ast, o['frame'])
         return codeGen, ast
 
+
+    def visitStructType(self, ast, c):
+        # Create a new emitter for the struct class
+        structName = ast.name.name
+        emitter = Emitter(f"{structName}.j")
+        
+        # Add emitter to context
+        c.append(emitter)
+        
+        # Generate class header
+        emitter.printout(emitter.emitPROLOG(structName, "java/lang/Object"))
+        
+        # Generate instance fields
+        for decl in ast.varDecls:
+            emitter.printout(emitter.emitATTRIBUTE(decl.variable.name, self.getJVMType(decl.varType), False))
+        
+        # Generate default constructor
+        emitter.printout(emitter.emitDEFAULT_CONSTRUCTOR(structName))
+        
+        # Generate methods
+        for method in ast.methods:
+            self.visit(method, c)
+        
+        # End class
+        emitter.printout(emitter.emitEPILOG())
+        
+        # Remove emitter from context
+        c.pop()
+
+    def visitFieldAccess(self, ast, c):
+        # Get code and type of the object
+        frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
+        emitter = c[-2] if isinstance(c[-1], Frame) else c[-3]
+        
+        code, typ = self.visit(ast.obj, c)
+        
+        # Get field info
+        fieldName = ast.fieldname.name
+        fieldType = None
+        
+        # Find the field type in the struct
+        structName = typ.name
+        
+        # Generate field access code
+        code = code + emitter.emitGETFIELD(structName, fieldName, self.getJVMType(fieldType))
+        
+        return code, fieldType
+
+    def visitStructLiteral(self, ast, c):
+        # Get the frame and emitter
+        frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
+        emitter = c[-2] if isinstance(c[-1], Frame) else c[-3]
+        
+        structName = ast.name
+        
+        # Generate code to create a new instance of the struct
+        code = emitter.emitNEW(structName)
+        code = code + emitter.emitDUP()
+        code = code + emitter.emitINVOKESPECIAL(structName + "/<init>", "()V")
+        
+        # Generate code to initialize fields
+        for idx, expr in enumerate(ast.fields):
+            code = code + emitter.emitDUP()
+            exprCode, exprType = self.visit(expr, c)
+            code = code + exprCode
+            
+            # Get field name and type
+            fieldName = ast.fieldNames[idx].name
+            
+            # Emit putfield instruction
+            code = code + emitter.emitPUTFIELD(structName, fieldName, self.getJVMType(exprType))
+        
+        return code, ast.structType
+
+    def visitMethodDecl(self, ast, c):
+        emitter = c[-1]
+        frame = Frame(ast.name.name, self.getJVMType(ast.returnType))
+        newContext = c + [frame]
+        
+        inType = [self.getJVMType(param.varType) for param in ast.param]
+        paramsCode = "(" + "".join(inType) + ")"
+        returnType = self.getJVMType(ast.returnType)
+        methodCode = f"{ast.name.name}{paramsCode}{returnType}"
+        
+        emitter.printout(emitter.emitMETHOD(ast.name.name, methodCode, False, frame))
+        emitter.printout(emitter.emitVAR(0, "this", emitter.className, frame.getStartLabel(), frame.getEndLabel(), frame))
+        
+        startParamIdx = 1
+        for idx, param in enumerate(ast.param):
+            paramType = self.getJVMType(param.varType)
+            paramName = param.variable.name
+            index = startParamIdx
+            startParamIdx += 1 if paramType in ["I", "Z", "F"] else 2
+            emitter.printout(emitter.emitVAR(index, paramName, paramType, frame.getStartLabel(), frame.getEndLabel(), frame))
+        
+        emitter.printout(emitter.emitLABEL(frame.getStartLabel(), frame))
+        [self.visit(stmt, newContext) for stmt in ast.body]
+        emitter.printout(emitter.emitLABEL(frame.getEndLabel(), frame))
+        
+        if type(ast.returnType) is VoidType:
+            emitter.printout(emitter.emitRETURN(frame))
+        
+        emitter.printout(emitter.emitENDMETHOD(frame))
+
+    def visitMethCall(self, ast, c):
+        frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
+        emitter = c[-2] if isinstance(c[-1], Frame) else c[-3]
+        
+        objCode, objType = self.visit(ast.obj, c)
+        
+        argCode = ""
+        inType = []
+        for arg in ast.args:
+            argExpr, argType = self.visit(arg, c)
+            argCode = argCode + argExpr
+            inType.append(self.getJVMType(argType))
+        
+        methodName = ast.method.name
+        paramsCode = "(" + "".join(inType) + ")"
+        returnType = None
+        code = objCode + argCode + \
+            emitter.emitINVOKEVIRTUAL(objType.name + "/" + methodName, paramsCode + self.getJVMType(returnType))
+        
+        return code, returnType
     
+    def visitIf(self, ast, o):
+        frame = o['frame']
+        label_false = frame.getNewLabel()
+        label_end_if = frame.getNewLabel()
+        condCode, _ = self.visit(ast.expr, o)
+        
+        self.emit.printout(condCode)
+        self.emit.printout(self.emit.emitIFFALSE(label_false,frame))
+        self.visit(ast.thenStmt, o)
+        self.emit.printout(self.emit.emitGOTO(label_end_if,frame))
+        self.emit.printout(self.emit.emitLABEL(label_false,frame))
+
+        if ast.elseStmt:
+            self.visit(ast.elseStmt,o)
+        self.emit.printout(self.emit.emitLABEL(label_end_if,frame))
+
+        return o
+    
+    def visitPrototype(self, ast: Prototype, o: dict):
+        raise NotImplementedError
+
+    def visitIntType(self, ast: IntType, o: dict):
+        raise NotImplementedError
+
+    def visitFloatType(self, ast: FloatType, o: dict):
+        raise NotImplementedError
+
+    def visitBoolType(self, ast: BoolType, o: dict):
+        raise NotImplementedError
+
+    def visitStringType(self, ast: StringType, o: dict):
+        raise NotImplementedError
+
+    def visitVoidType(self, ast: VoidType, o: dict):
+        raise NotImplementedError
+
+    def visitInterfaceType(self, ast: InterfaceType, o: dict):
+        raise NotImplementedError
+
+    def visitForBasic(self, ast: ForBasic, o: dict):
+        frame = o['frame']
+        frame.enterLoop()
+        
+        continue_label = frame.getContinueLabel()
+        break_label = frame.getBreakLabel()
+        
+        self.emit.printout(self.emit.emitLABEL(continue_label, frame))
+        
+        cond_code, _ = self.visit(ast.cond, o)
+        self.emit.printout(cond_code)
+        self.emit.printout(self.emit.emitIFFALSE(break_label, frame))
+        
+        self.visit(ast.loop, o)
+        
+        self.emit.printout(self.emit.emitGOTO(continue_label, frame))
+        self.emit.printout(self.emit.emitLABEL(break_label, frame))
+        
+        frame.exitLoop()
+        return o
+
+    def visitForStep(self, ast: ForStep, o: dict):
+        frame = o['frame']
+        frame.enterLoop()
+
+        o['env'] = [[]] + o['env']
+        frame.enterScope(False)
+        
+        self.visit(ast.init, o)
+        
+        continue_label = frame.getNewLabel()
+        body_label = frame.getNewLabel()
+        update_label = frame.getNewLabel()
+        break_label = frame.getBreakLabel()
+
+        self.emit.printout(self.emit.emitLABEL(continue_label, frame))
+
+        cond_code, _ = self.visit(ast.cond, o)
+        self.emit.printout(cond_code)
+        self.emit.printout(self.emit.emitIFFALSE(break_label, frame))
+
+        # Loop body
+        self.emit.printout(self.emit.emitLABEL(body_label, frame))
+        self.visit(ast.loop, o)
+
+        # Update statement part (where continue should jump)
+        self.emit.printout(self.emit.emitLABEL(update_label, frame))
+        self.visit(ast.upda, o) # Execute update statement
+
+        # Jump back to condition check
+        self.emit.printout(self.emit.emitGOTO(continue_label, frame))
+
+        # End of loop
+        self.emit.printout(self.emit.emitLABEL(break_label, frame))
+
+        frame.exitScope()
+        o['env'].pop(0)
+
+        frame.exitLoop()
+        return o
+        
+    def visitForEach(self, ast, o):
+        return o
+
+    def visitContinue(self, ast, o):
+        self.emit.printout(self.emit.emitGOTO(o['frame'].getContinueLabel(),o['frame']))
+        return o
+
+    def visitBreak(self, ast, o):
+        self.emit.printout(self.emit.emitGOTO(o['frame'].getBreakLabel(),o['frame']))
+        return o
+
+    def visitNilLiteral(self, ast: NilLiteral, o: dict):
+        frame = o['frame']
+        return self.emit.emitPUSHNULL(frame), None
