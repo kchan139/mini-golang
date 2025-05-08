@@ -10,7 +10,6 @@ from AST import *
 
 class CodeGenerator(BaseVisitor,Utils):
     def __init__(self):
-        # 
         self.className = "MiniGoClass"
         self.astTree = None
         self.path = None
@@ -208,7 +207,6 @@ class CodeGenerator(BaseVisitor,Utils):
         if 'frame' not in o:
             if not varType and varInit:
                 _, varType = self.visit(varInit, temp_env)
-            
             elif not varType:
                 pass
 
@@ -217,8 +215,7 @@ class CodeGenerator(BaseVisitor,Utils):
         else:
             frame = o['frame']
             if not varType and varInit:
-                _, varType = self.visit(varInit, {'env':o['env'], 'frame': frame}) # Use the actual frame for visiting initializer
-            
+                _, varType = self.visit(varInit, {'env':o['env'], 'frame': frame})
             elif not varType:
                 pass
 
@@ -228,13 +225,13 @@ class CodeGenerator(BaseVisitor,Utils):
             self.emit.printout(self.emit.emitVAR(index, ast.varName, varType, frame.getStartLabel(), frame.getEndLabel(), frame))
 
             if varInit:
-                rhsCode, rhsType = self.visit(varInit, {'env':o['env'], 'frame': frame}) # Use the actual frame for visiting initializer
+                rhsCode, rhsType = self.visit(varInit, {'env':o['env'], 'frame': frame})
                 if type(varType) is FloatType and type(rhsType) is IntType:
                     rhsCode += self.emit.emitI2F(frame)
                 self.emit.printout(rhsCode)
                 self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame))
-            elif type(varType) is ArrayType: # Added array allocation for local arrays without initializer
-                # Generate code to allocate the array
+
+            elif type(varType) is ArrayType:
                 dim_codes = []
                 for dim_expr in varType.dimens:
                     dim_code, _ = self.visit(dim_expr, {'env':o['env'], 'frame': frame})
@@ -247,7 +244,6 @@ class CodeGenerator(BaseVisitor,Utils):
                 else:
                     self.emit.printout(self.emit.emitMULTIANEWARRAY(varType, frame))
 
-                # Store the allocated array reference in the local variable
                 self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame))
 
 
@@ -258,16 +254,14 @@ class CodeGenerator(BaseVisitor,Utils):
         if o.get('stmt'):
             o["stmt"] = False
             params_code = "".join([self.visit(x, o)[0] for x in ast.args])
-            self.emit.printout(params_code)
-              
+            self.emit.printout(params_code)      
             self.emit.printout(self.emit.emitINVOKESTATIC(f"{sym.value.value}/{ast.funName}", sym.mtype, o['frame']))
-            #Đã đặt đủ tham số vào stack rồi thì sinh mã gọi hàm thôi
-
-            return o # trả về o luôn vì stmt luôn trả về void k cần quan tâm
+            
+            return o
+        
         output = "".join([self.visit(x, o)[0] for x in ast.args])
         output += self.emit.emitINVOKESTATIC(f"{sym.value.value}/{ast.funName}", sym.mtype, o['frame'])
 
-        # Vì funcall ở chỗ này là 1 biểu thức nên mình cần trả về giá trị kèm theo kiểu trả về luôn.
         return output, sym.mtype.rettype
 
     def visitBlock(self, ast: Block, o: dict) -> dict:
@@ -279,9 +273,7 @@ class CodeGenerator(BaseVisitor,Utils):
         for item in ast.member:
             if type(item) is FuncCall:
                 env["stmt"] = True
-            #Cập nhật biến cờ trước khi visit vào hàm FuncCall, lát nữa duyệt vào trong sẽ tắt biến cờ này đi.
             env = self.visit(item, env)
-
 
         self.emit.printout(self.emit.emitLABEL(env['frame'].getEndLabel(), env['frame']))
 
@@ -291,19 +283,15 @@ class CodeGenerator(BaseVisitor,Utils):
     def visitId(self, ast: Id, o: dict) -> dict:
         sym = next(filter(lambda x: x.name == ast.name, [j for i in o['env'] for j in i]), None)
 
-        #Nếu Id này nằm ở vế trái phép gán
         if o.get('isLeft'):
-            if type(sym.value) is Index: #Nếu Id là 1 tên trường của 1 object
+            if type(sym.value) is Index:
                 return self.emit.emitWRITEVAR(ast.name, sym.mtype, sym.value.value, o['frame']), sym.mtype
             else:         
-                #Putstatic là ghi vào biến static,
                 return self.emit.emitPUTSTATIC(f"{sym.value.value}/{ast.name}", sym.mtype, o['frame']), sym.mtype
 
-
-        if type(sym.value) is Index: #Nếu Id là 1 tên trường của 1 object
+        if type(sym.value) is Index:
             return self.emit.emitREADVAR(ast.name, sym.mtype, sym.value.value, o['frame']), sym.mtype
         else:         
-            #Getstatic là đọc biến static,
             return self.emit.emitGETSTATIC(f"{sym.value.value}/{ast.name}", sym.mtype, o['frame']), sym.mtype
 
     def visitAssign(self, ast: Assign, o: dict) -> dict:
@@ -454,23 +442,23 @@ class CodeGenerator(BaseVisitor,Utils):
         for idx, item in enumerate(ast.idx):
             codeGen += self.visit(item, newO)[0]
             if idx != len(ast.idx) - 1:
-                codeGen += self.emit.emitALOAD(arrType, o['frame']) # ALOAD for intermediate dimensions
+                codeGen += self.emit.emitALOAD(arrType, o['frame'])
 
         retType = None
         if len(arrType.dimens) == len(ast.idx):
             retType = arrType.eleType
             if not o.get('isLeft'):
-                codeGen += self.emit.emitALOAD(retType, o['frame']) # ALOAD for the final element
+                codeGen += self.emit.emitALOAD(retType, o['frame'])
             else:
-                self.arrayCell = retType # Store element type for ASTORE
+                self.arrayCell = retType
         else:
             retType = ArrayType(arrType.dimens[len(ast.idx):], arrType.eleType)
             if not o.get('isLeft'):
-                codeGen += self.emit.emitALOAD(retType, o['frame']) # ALOAD for a slice (sub-array)
+                codeGen += self.emit.emitALOAD(retType, o['frame'])
             else:
-                self.arrayCell = retType # Store slice type for ASTORE
+                self.arrayCell = retType
 
-        return codeGen, retType # Return code to load the element/slice and its type
+        return codeGen, retType
 
     def visitArrayLiteral(self, ast: ArrayLiteral , o: dict) -> tuple[str, Type]:
 
@@ -556,74 +544,52 @@ class CodeGenerator(BaseVisitor,Utils):
 
 
     def visitStructType(self, ast, c):
-        # Create a new emitter for the struct class
         structName = ast.name.name
         emitter = Emitter(f"{structName}.j")
         
-        # Add emitter to context
         c.append(emitter)
         
-        # Generate class header
         emitter.printout(emitter.emitPROLOG(structName, "java/lang/Object"))
         
-        # Generate instance fields
         for decl in ast.varDecls:
             emitter.printout(emitter.emitATTRIBUTE(decl.variable.name, self.getJVMType(decl.varType), False))
         
-        # Generate default constructor
         emitter.printout(emitter.emitDEFAULT_CONSTRUCTOR(structName))
         
-        # Generate methods
         for method in ast.methods:
             self.visit(method, c)
         
-        # End class
         emitter.printout(emitter.emitEPILOG())
-        
-        # Remove emitter from context
         c.pop()
 
     def visitFieldAccess(self, ast, c):
-        # Get code and type of the object
         frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
         emitter = c[-2] if isinstance(c[-1], Frame) else c[-3]
         
         code, typ = self.visit(ast.obj, c)
-        
-        # Get field info
         fieldName = ast.fieldname.name
         fieldType = None
-        
-        # Find the field type in the struct
         structName = typ.name
-        
-        # Generate field access code
         code = code + emitter.emitGETFIELD(structName, fieldName, self.getJVMType(fieldType))
         
         return code, fieldType
 
     def visitStructLiteral(self, ast, c):
-        # Get the frame and emitter
         frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
         emitter = c[-2] if isinstance(c[-1], Frame) else c[-3]
         
         structName = ast.name
-        
-        # Generate code to create a new instance of the struct
         code = emitter.emitNEW(structName)
         code = code + emitter.emitDUP()
         code = code + emitter.emitINVOKESPECIAL(structName + "/<init>", "()V")
         
-        # Generate code to initialize fields
         for idx, expr in enumerate(ast.fields):
             code = code + emitter.emitDUP()
             exprCode, exprType = self.visit(expr, c)
             code = code + exprCode
             
-            # Get field name and type
             fieldName = ast.fieldNames[idx].name
             
-            # Emit putfield instruction
             code = code + emitter.emitPUTFIELD(structName, fieldName, self.getJVMType(exprType))
         
         return code, ast.structType
