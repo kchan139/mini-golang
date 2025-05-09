@@ -92,7 +92,7 @@ case "$1" in
     clean)
         # Remove all test artifacts from directories
         clear
-        rm *.class
+        rm *.class 2>/dev/null
         rm -rf ${INPUT}/* 2>/dev/null
         rm -rf ${OUTPUT}/* 2>/dev/null
         echo "Test artifacts removed from:"
