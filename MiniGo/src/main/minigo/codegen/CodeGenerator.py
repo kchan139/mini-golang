@@ -104,11 +104,31 @@ class CodeGenerator(BaseVisitor,Utils):
 
         env['frame'] = frame
 
+        # First initialize the arrays
+        for item in ast.decl:
+            if isinstance(item, VarDecl) and isinstance(item.varType, ArrayType):
+                # Generate code to initialize the array with proper dimensions
+                array_code = ""
+                for dim in item.varType.dimens:
+                    dim_code, _ = self.visit(dim, env) 
+                    array_code += dim_code
+                
+                if len(item.varType.dimens) == 1:
+                    array_code += self.emit.emitNEWARRAY(item.varType.eleType, frame)
+                else:
+                    array_code += self.emit.emitMULTIANEWARRAY(item.varType, frame)
+                    
+                self.emit.printout(array_code)
+                self.emit.printout(self.emit.emitPUTSTATIC(f"{self.className}/{item.varName}", item.varType, frame))
+
+        # Then handle other variable initializations
         assignStmts = []
         for item in ast.decl:
-            if isinstance(item, (VarDecl, ConstDecl)) and (item.varInit or item.iniExpr):
-                assignStmts.append(Assign(Id(item.varName if isinstance(item, VarDecl) else item.conName), 
-                                        item.varInit or item.iniExpr))
+            if isinstance(item, VarDecl) and item.varInit and not isinstance(item.varType, ArrayType):
+                assignStmts.append(Assign(Id(item.varName), item.varInit))
+            elif isinstance(item, ConstDecl) and item.iniExpr:
+                assignStmts.append(Assign(Id(item.conName), item.iniExpr))
+        
         self.visit(Block(assignStmts), env)
 
         self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
@@ -398,6 +418,12 @@ class CodeGenerator(BaseVisitor,Utils):
 
    ##  basic expression ------------------------------
     def visitBinaryOp(self, ast, o):
+        if 'frame' not in o:
+            temp_frame = Frame("<clinit>", VoidType())
+            temp_env = o.copy()
+            temp_env['frame'] = temp_frame
+            return self.visitBinaryOp(ast, temp_env)
+        
         op = ast.op
         frame = o['frame']
         codeL, typeL = self.visit(ast.left, o)
@@ -466,6 +492,12 @@ class CodeGenerator(BaseVisitor,Utils):
 
 
     def visitIntLiteral(self, ast: IntLiteral, o: dict) -> tuple[str, Type]:
+        if 'frame' not in o:
+            temp_frame = Frame("<clinit>", VoidType())
+            temp_env = o.copy()
+            temp_env['frame'] = temp_frame
+            return self.visitIntLiteral(ast, temp_env)
+        
         return self.emit.emitPUSHICONST(ast.value, o['frame']), IntType()
     
     def visitFloatLiteral(self, ast: FloatLiteral, o: dict) -> tuple[str, Type]:
