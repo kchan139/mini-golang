@@ -389,79 +389,64 @@ class CodeGenerator(BaseVisitor,Utils):
 
 
    ##  basic expression ------------------------------
-    def visitBinaryOp(self, ast: BinaryOp, o: dict) -> tuple[str, Type]:
+    def visitBinaryOp(self, ast, o):
         op = ast.op
         frame = o['frame']
-        codeLeft, typeLeft = self.visit(ast.left, o)
-        codeRight, typeRight = self.visit(ast.right, o)
-        if op in ['+', '-'] and type(typeLeft) in [FloatType, IntType]:
-            typeReturn = IntType() if type(typeLeft) is IntType and type(typeRight) is IntType else FloatType()
-            if type(typeReturn) is FloatType:
-                if type(typeLeft) is IntType:
-                    codeLeft += self.emit.emitI2F(frame)
-                if type(typeRight) is IntType:
-                    codeRight += self.emit.emitI2F(frame)
-            return codeLeft + codeRight + self.emit.emitADDOP(op, typeReturn, frame), typeReturn
+        codeL, typeL = self.visit(ast.left, o)
+        codeR, typeR = self.visit(ast.right, o)
+
+        # arithmetic +, - on ints/floats
+        if op in ['+', '-'] and isinstance(typeL, (IntType, FloatType)):
+            resultType = IntType() if isinstance(typeL, IntType) and isinstance(typeR, IntType) else FloatType()
+            if isinstance(resultType, FloatType):
+                if isinstance(typeL, IntType):
+                    codeL += self.emit.emitI2F(frame)
+                if isinstance(typeR, IntType):
+                    codeR += self.emit.emitI2F(frame)
+            return codeL + codeR + self.emit.emitADDOP(op, resultType, frame), resultType
+
+        # multiplication/division
         if op in ['*', '/']:
-            typeReturn = IntType() if type(typeLeft) is IntType and type(typeRight) is IntType else FloatType()
-            if type(typeReturn) is FloatType:
-                if type(typeLeft) is IntType:
-                    codeLeft += self.emit.emitI2F(frame)
-                if type(typeRight) is IntType:
-                    codeRight += self.emit.emitI2F(frame)
-            return codeLeft + codeRight + self.emit.emitMULOP(op, typeReturn, frame), typeReturn
-        if op in ['%']:
-            return codeLeft + codeRight + self.emit.emitMOD(frame), IntType()
-        if op in ['==', '!=', '<', '>', '>=', '<='] and type(typeLeft) in [FloatType, IntType]:
-            if type(typeLeft) is FloatType or type(typeRight) is FloatType:
-                if type(typeLeft) is IntType:
-                    codeLeft += self.emit.emitI2F(frame)
-                if type(typeRight) is IntType:
-                    codeRight += self.emit.emitI2F(frame)
-                return codeLeft + codeRight + self.emit.emitREOP(op, FloatType(), frame), BoolType()
-            else:
-                return codeLeft + codeRight + self.emit.emitREOP(op, IntType(), frame), BoolType()
-        if op in ['||']:
-            return codeLeft + codeRight + self.emit.emitOROP(frame), BoolType()
-        if op in ['&&']:
-            return codeLeft + codeRight + self.emit.emitANDOP(frame), BoolType()
+            resultType = IntType() if isinstance(typeL, IntType) and isinstance(typeR, IntType) else FloatType()
+            if isinstance(resultType, FloatType):
+                if isinstance(typeL, IntType):
+                    codeL += self.emit.emitI2F(frame)
+                if isinstance(typeR, IntType):
+                    codeR += self.emit.emitI2F(frame)
+            return codeL + codeR + self.emit.emitMULOP(op, resultType, frame), resultType
 
-        if op in ['+'] and isinstance(typeLeft, StringType):
-            return codeLeft + codeRight + self.emit.emitINVOKEVIRTUAL("java/lang/String/concat", MType([StringType()], StringType()), frame), StringType()
-        
-        elif op in ['==', '!=', '<', '>', '<=', '>='] and isinstance(typeLeft, StringType):
-            code = codeLeft + codeRight + self.emit.emitINVOKEVIRTUAL("java/lang/String/compareTo", MType([StringType()], IntType()), frame)
-            
-            false_label = frame.getNewLabel()
-            end_label = frame.getNewLabel()
+        # modulo
+        if op == '%':
+            return codeL + codeR + self.emit.emitMOD(frame), IntType()
 
-            if op == "==":
-                code += self.emit.emitIFICMPNE(false_label, o['frame'])
-            elif op == "!=":
-                code += self.emit.emitIFICMPEQ(false_label, o['frame'])
-            elif op == "<":
-                code += self.emit.emitIFICMPGE(false_label, o['frame'])
-            elif op == "<=":
-                code += self.emit.emitIFICMPGT(false_label, o['frame'])
-            elif op == ">":
-                code += self.emit.emitIFLE(false_label, o['frame'])
-            elif op == ">=":
-                code += self.emit.emitIFLT(false_label, o['frame'])
+        # relational on ints/floats
+        if op in ['==', '!=', '<', '>', '<=', '>='] and isinstance(typeL, (IntType, FloatType)):
+            cmpType = IntType() if isinstance(typeL, IntType) and isinstance(typeR, IntType) else FloatType()
+            return codeL + codeR + self.emit.emitREOP(op, cmpType, frame), BoolType()
 
-            frame.pop()
-            
-            code += self.emit.emitPUSHCONST("1", BoolType(), frame)[0]
-            frame.push()
-            
-            code += self.emit.emitGOTO(end_label, frame)
-            code += self.emit.emitLABEL(false_label, frame)
+        # logical
+        if op == '||':
+            return codeL + codeR + self.emit.emitOROP(frame), BoolType()
+        if op == '&&':
+            return codeL + codeR + self.emit.emitANDOP(frame), BoolType()
 
-            code += self.emit.emitPUSHCONST("0", BoolType(), frame)[0]
-            frame.push()
-            
-            code += self.emit.emitLABEL(end_label, frame)
+        # string concatenation
+        if op == '+' and isinstance(typeL, StringType):
+            mtype = MType([StringType()], StringType())
+            return codeL + codeR + self.emit.emitINVOKEVIRTUAL('java/lang/String/concat', mtype, frame), StringType()
 
+        # string comparisons
+        if op in ['==', '!=', '<', '>', '<=', '>='] and isinstance(typeL, StringType):
+            # call compareTo
+            mtype = MType([StringType()], IntType())
+            code = codeL + codeR + self.emit.emitINVOKEVIRTUAL('java/lang/String/compareTo', mtype, frame)
+            # compare result to zero
+            code += self.emit.emitPUSHICONST(0, frame)
+            code += self.emit.emitREOP(op, IntType(), frame)
             return code, BoolType()
+
+        # fallback (should not reach)
+        return "", BoolType()
               
     def visitUnaryOp(self, ast: UnaryOp, o: dict) -> tuple[str, Type]:
         if ast.op == '!':
@@ -487,29 +472,32 @@ class CodeGenerator(BaseVisitor,Utils):
     ## END basic expression ------------------------------
 
     ## array ------------------------------
-    def visitArrayCell(self, ast: ArrayCell, o: dict) -> tuple[str, Type]:
+    def visitArrayCell(self, ast, o):
         newO = o.copy()
         newO['isLeft'] = False
-        code, arrType = self.visit(ast.arr, o)
-
-        for idx_expr in ast.idx:
-            code += self.visit(idx_expr, o)[0]
-            code += self.emit.emitALOAD(arrType.eleType if isinstance(arrType, ArrayType) else arrType, o['frame'])
-
+        curr_ope_begin = o['frame'].currOpStackSize
+        codeGen, arrType = self.visit(ast.arr, newO)
+        curr_ope_max = 0
+        for idx, val in enumerate(ast.idx):
+            codeGen += self.visit(val, newO)[0]
+            curr_ope_max = max(curr_ope_begin, o['frame'].currOpStackSize)
+            if idx != len(ast.idx) - 1:
+                codeGen += self.emit.emitALOAD(arrType, o['frame'])
         retType = None
         if len(arrType.dimens) == len(ast.idx):
             retType = arrType.eleType
             if not o.get('isLeft'):
-                codeGen += self.emit.emitALOAD(retType, o['frame'])
+                codeGen += self.emit.emitALOAD(retType,o['frame'])
             else:
-                self.arrayCell = retType
+                o['frame'].maxOpStackSize = max(o['frame'].maxOpStackSize + curr_ope_max - curr_ope_begin,10000)
+                self.arrayCell = ast.idx
         else:
-            retType = ArrayType(arrType.dimens[len(ast.idx):], arrType.eleType)
+            retType = ArrayType(arrType.dimens[len(ast.idx):],arrType.eleType)
             if not o.get('isLeft'):
                 codeGen += self.emit.emitALOAD(retType, o['frame'])
             else:
-                self.arrayCell = retType
-
+                o['frame'].maxOpStackSize = max(o['frame'].maxOpStackSize + curr_ope_max - curr_ope_begin,10000)
+                self.arrayCell = ast.idx
         return codeGen, retType
 
     def visitArrayLiteral(self, ast:ArrayLiteral , o: dict) -> tuple[str, Type]:
@@ -574,36 +562,30 @@ class CodeGenerator(BaseVisitor,Utils):
         codeGen += self.emit.emitMULTIANEWARRAY(ast, o['frame'])
         return codeGen, ast
 
-    def visitStructType(self, ast: StructType, o: dict):
-        struct_name = ast.name
-        self.emit.printout(self.emit.emitPROLOG(struct_name, "java.lang.Object"))
-        
-        # Emit fields
-        for elem in ast.elements:
-            self.emit.printout(self.emit.emitATTRIBUTE(elem[0], elem[1], False, False, None))
-        
-        # Default constructor
-        self.emit.printout(self.emit.emitMETHOD("<init>", MType([], VoidType()), False, Frame("<init>", VoidType())))
-        # Constructor with parameters
-        params = [ParamDecl(elem[0], elem[1]) for elem in ast.elements]
-        self.visit(MethodDecl(None, FuncDecl("<init>", params, VoidType(), Block([
-            Assign(FieldAccess(Id("this"), elem[0]), Id(elem[0])) for elem in ast.elements
-        ]))), o)
-        
-        self.emit.printout(self.emit.emitEPILOG())
-        return o
+    def visitStructType(self, ast, o):
+        self.emit.printout(self.emit.emitPROLOG(self.struct.name, "java.lang.Object"))
+        for item in self.list_type.values():
+            if isinstance(item, InterfaceType) and self.checkType(item, ast, [(InterfaceType, StructType)]):
+                self.emit.printout(self.emit.emitIMPLEMENT(item.name))
 
-    def visitFieldAccess(self, ast, c):
-        frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
-        emitter = c[-2] if isinstance(c[-1], Frame) else c[-3]
-        
-        code, typ = self.visit(ast.obj, c)
-        fieldName = ast.fieldname.name
-        fieldType = None
-        structName = typ.name
-        code = code + emitter.emitGETFIELD(structName, fieldName, self.getJVMType(fieldType))
-        
-        return code, fieldType
+        for item in ast.elements:
+            self.emit.printout(self.emit.emitATTRIBUTE(item[0], item[1], False, False, False))
+
+        self.visit(MethodDecl(None, None, FuncDecl("<init>", [ParamDecl(item[0],item[1]) for item in ast.elements], VoidType(),
+                            Block([Assign(FieldAccess(Id("this"),item[0]),Id(item[0])) for item in ast.elements]))), o)
+        self.visit(MethodDecl(None, None, FuncDecl("<init>", [], VoidType(), Block([]))), o)
+        for item in ast.methods: self.visit(item, o)
+        self.emit.printout(self.emit.emitEPILOG())
+
+    def visitFieldAccess(self, ast, o):
+        newO = o.copy()
+        newO['isLeft'] = False
+        code, typ = self.visit(ast.receiver, newO)
+        typ = self.list_type[typ.name]
+        field = self.lookup(ast.field, typ.elements, lambda x: x[0])
+        if o.get('isLeft'):
+            return code, field[1]
+        return code + self.emit.emitGETFIELD(typ.name + '/' + field[0], field[1], o['frame']), field[1]
 
     def visitStructLiteral(self, ast, c):
         frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
@@ -790,3 +772,37 @@ class CodeGenerator(BaseVisitor,Utils):
     def visitNilLiteral(self, ast: NilLiteral, o: dict):
         frame = o['frame']
         return self.emit.emitPUSHNULL(frame), None
+    
+    def checkType(self, LSH_type, RHS_type, list_type_permission):
+        if type(RHS_type) == StructType and RHS_type.name == "":
+            if not type(LSH_type) in [Id, StructType, InterfaceType]: return False
+            else: return True
+
+        LSH_type = self.lookup(LSH_type.name, self.list_type.values(), lambda x: x.name) if isinstance(LSH_type, Id) else LSH_type
+        RHS_type = self.lookup(RHS_type.name, self.list_type.values(), lambda x: x.name) if isinstance(RHS_type, Id) else RHS_type
+
+        if (type(LSH_type), type(RHS_type)) in list_type_permission:
+            if isinstance(LSH_type, InterfaceType) and isinstance(RHS_type, StructType):
+                count = 0
+                for proto in LSH_type.methods:
+                    for meth in RHS_type.methods:
+                        if proto.name == meth.fun.name and [type(x) for x in proto.params] == [type(x) for x in list(map(lambda x: x.parType, meth.fun.params))]:
+                            type_proto = proto.retType
+                            type_meth = meth.fun.retType
+                            if type(type_proto) == type(type_meth):
+                                if not type(type_proto) == Id:
+                                    count += 1
+                                else:
+                                    if type_proto.name == type_meth.name:
+                                        count += 1
+                if count == len(LSH_type.methods):
+                    return True
+                else: return False
+            return True
+        if (type(LSH_type), type(RHS_type)) in [(StructType, StructType), (InterfaceType, InterfaceType)]:
+            return LSH_type.name == RHS_type.name
+
+        if isinstance(LSH_type, ArrayType) and isinstance(RHS_type, ArrayType):
+            return self.checkType(LSH_type.eleType, RHS_type.eleType, [(FloatType, IntType)]) and LSH_type.dimens == RHS_type.dimens
+
+        return type(LSH_type) == type(RHS_type)
