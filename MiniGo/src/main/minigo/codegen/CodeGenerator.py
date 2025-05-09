@@ -18,6 +18,7 @@ class CodeGenerator(BaseVisitor,Utils):
         self.list_function = []
         self.arrayCell = None
         self.arrayCellType = None
+        self.list_type = {}
 
     def init(self):
         mem = [
@@ -105,11 +106,9 @@ class CodeGenerator(BaseVisitor,Utils):
 
         assignStmts = []
         for item in ast.decl:
-            if isinstance(item, VarDecl) and item.varInit:
-                assignStmts.append(Assign(Id(item.varName), item.varInit))
-            elif isinstance(item, ConstDecl) and item.iniExpr:
-                assignStmts.append(Assign(Id(item.conName), item.iniExpr))
-        
+            if isinstance(item, (VarDecl, ConstDecl)) and (item.varInit or item.iniExpr):
+                assignStmts.append(Assign(Id(item.varName if isinstance(item, VarDecl) else item.conName), 
+                                        item.varInit or item.iniExpr))
         self.visit(Block(assignStmts), env)
 
         self.emit.printout(self.emit.emitLABEL(frame.getEndLabel(), frame))
@@ -119,19 +118,30 @@ class CodeGenerator(BaseVisitor,Utils):
 
     def visitProgram(self, ast: Program, c):
         self.list_function = c + [Symbol(item.name, MType(list(map(lambda x: x.parType, item.params)), item.retType), CName(self.className)) for item in ast.decl if isinstance(item, FuncDecl)]
+        self.list_type = {x.name: x for x in ast.decl if isinstance(x, (Type, StructType, InterfaceType))}  # Added
 
+        for item in ast.decl:
+            if isinstance(item, MethodDecl):
+                if item.recType.name in self.list_type:
+                    self.list_type[item.recType.name].methods.append(item)
+        
         env = {}
         env['env'] = [c]
-
         self.emit.printout(self.emit.emitPROLOG(self.className, "java.lang.Object"))
-        
-        env = reduce(lambda a, x: self.visit(x, a) if isinstance(x, VarDecl) or  isinstance(x, ConstDecl) else a, ast.decl, env)
+        # Process declarations
+        env = reduce(lambda a, x: self.visit(x, a) if isinstance(x, (VarDecl, ConstDecl)) else a, ast.decl, env)
         reduce(lambda a, x: self.visit(x, a) if isinstance(x, FuncDecl) else a, ast.decl, env)
         
         self.emitObjectInit()
         self.emitObjectCInit(ast, env)
         self.emit.printout(self.emit.emitEPILOG())
-
+        
+        # Emit separate .j files for each struct
+        for item in self.list_type.values():
+            if isinstance(item, StructType):
+                self.emit = Emitter(self.path + "/" + item.name + ".j")
+                self.visit(item, {'env': env['env']})
+        
         return env
     
     def visitFuncDecl(self, ast: FuncCall, o: dict) -> dict:
@@ -180,14 +190,20 @@ class CodeGenerator(BaseVisitor,Utils):
 
     def visitVarDecl(self, ast: VarDecl, o: dict) -> dict:
         def create_init(varType: Type) -> Literal:
-            if type(varType) is IntType:
+            if isinstance(varType, IntType):
                 return IntLiteral(0)
-            elif type(varType) is FloatType:
+            elif isinstance(varType, FloatType):
                 return FloatLiteral(0.0)
-            elif type(varType) is StringType:
+            elif isinstance(varType, StringType):
                 return StringLiteral("")
-            elif type(varType) is BoolType:
+            elif isinstance(varType, BoolType):
                 return BooleanLiteral(False)
+            elif isinstance(varType, Id):  # Struct type
+                struct_typ = self.list_type.get(varType.name, None)
+                if struct_typ:
+                    return StructLiteral(struct_typ.name, [(elem[0], create_init(elem[1])) for elem in struct_typ.elements])
+            # Handle array initialization if needed
+            return None  # Default case
             # Array default initialization handled below, not via recursive create_init for literals
 
         varInit = ast.varInit
@@ -410,10 +426,10 @@ class CodeGenerator(BaseVisitor,Utils):
         if op in ['&&']:
             return codeLeft + codeRight + self.emit.emitANDOP(frame), BoolType()
 
-        if op in ['+'] and type(typeLeft) is StringType:
+        if op in ['+'] and isinstance(typeLeft, StringType):
             return codeLeft + codeRight + self.emit.emitINVOKEVIRTUAL("java/lang/String/concat", MType([StringType()], StringType()), frame), StringType()
-
-        if op in ['==', '!=', '<', '>', '>=', '<=',] and type(typeLeft) is StringType:
+        
+        elif op in ['==', '!=', '<', '>', '<=', '>='] and isinstance(typeLeft, StringType):
             code = codeLeft + codeRight + self.emit.emitINVOKEVIRTUAL("java/lang/String/compareTo", MType([StringType()], IntType()), frame)
             
             false_label = frame.getNewLabel()
@@ -470,16 +486,15 @@ class CodeGenerator(BaseVisitor,Utils):
     
     ## END basic expression ------------------------------
 
-    ## TODO array ------------------------------
+    ## array ------------------------------
     def visitArrayCell(self, ast: ArrayCell, o: dict) -> tuple[str, Type]:
         newO = o.copy()
         newO['isLeft'] = False
-        codeGen, arrType = self.visit(ast.arr, newO)
+        code, arrType = self.visit(ast.arr, o)
 
-        for idx, item in enumerate(ast.idx):
-            codeGen += self.visit(item, newO)[0]
-            if idx != len(ast.idx) - 1:
-                codeGen += self.emit.emitALOAD(arrType, o['frame'])
+        for idx_expr in ast.idx:
+            code += self.visit(idx_expr, o)[0]
+            code += self.emit.emitALOAD(arrType.eleType if isinstance(arrType, ArrayType) else arrType, o['frame'])
 
         retType = None
         if len(arrType.dimens) == len(ast.idx):
@@ -497,79 +512,59 @@ class CodeGenerator(BaseVisitor,Utils):
 
         return codeGen, retType
 
-    def visitArrayLiteral(self, ast: ArrayLiteral , o: dict) -> tuple[str, Type]:
+    def visitArrayLiteral(self, ast:ArrayLiteral , o: dict) -> tuple[str, Type]:
 
-        def nested_recursive(current_value, context: dict) -> tuple[str, Type]:
-            if not isinstance(current_value, list):
-                return self.visit(current_value, context)
-
-            frame = context['frame']
-            if not current_value:
-                code_gen = self.emit.emitPUSHICONST(0, frame)
-                element_type_for_newarray = ast.eleType
-                
-                if isinstance(element_type_for_newarray, (IntType, FloatType, BoolType)):
-                    code_gen += self.emit.emitNEWARRAY(element_type_for_newarray, frame)
-                else:
-                    code_gen += self.emit.emitANEWARRAY(element_type_for_newarray, frame)
-
-                return code_gen, ArrayType([0], element_type_for_newarray)
-
-            code_gen = self.emit.emitPUSHICONST(len(current_value), frame)
+        def nested2recursive(dat: Union[Literal, list['NestedList']], o: dict) -> tuple[str, Type]:
+            if not isinstance(dat,list): 
+                return self.visit(dat, 0)
+            frame = o['frame']
+            codeGen = self.emit.emitPUSHCONST(len(dat), IntType(), frame)
             
-            first_element = current_value[0]
-            
-            if not isinstance(first_element, list):
-                _, type_of_elements = self.visit(first_element, context)
+            if not isinstance(dat[0],list):
+                _, type_element_array = self.visit(dat[0], o)
 
-                if isinstance(type_of_elements, IntType):
-                    code_gen += self.emit.emitNEWARRAY(type_of_elements, frame)
-                elif isinstance(type_of_elements, FloatType):
-                    code_gen += self.emit.emitNEWARRAY(type_of_elements, frame)
-                elif isinstance(type_of_elements, BoolType):
-                    code_gen += self.emit.emitNEWARRAY(type_of_elements, frame)
+                if type(type_element_array) in [IntType, BoolType, FloatType]:
+                    codeGen += self.emit.emitNEWARRAY(type_element_array, frame)
                 else:
-                    code_gen += self.emit.emitANEWARRAY(type_of_elements, frame)
+                    codeGen += self.emit.emitANEWARRAY(type_element_array, frame)
 
-                for idx, item in enumerate(current_value):
-                    code_gen += self.emit.emitDUP(frame)
-                    code_gen += self.emit.emitPUSHICONST(idx, frame)
-                    item_code, item_type = self.visit(item, context)
-                    code_gen += item_code
-                    
-                    if isinstance(type_of_elements, FloatType) and isinstance(item_type, IntType):
-                        code_gen += self.emit.emitI2F(frame)
-                    code_gen += self.emit.emitASTORE(type_of_elements, frame)
-                
-                return code_gen, ArrayType([len(current_value)], type_of_elements)
-    
+                for idx, item in enumerate(dat):
+                    codeGen += self.emit.emitDUP(frame)
+                    codeGen += self.emit.emitPUSHCONST(idx, IntType(), frame)
+                    itemCode, itemType = self.visit(item, o)
+                    codeGen += itemCode
+                    codeGen += self.emit.emitASTORE(type_element_array, frame)
+                if isinstance(type_element_array, ArrayType):
+                    new_dimens = [IntLiteral(len(dat))]
+                    new_dimens.extend(type_element_array.dimens)
+                    return codeGen, ArrayType(new_dimens, type_element_array.eleType)
+                else:
+                    return codeGen, ArrayType([IntLiteral(len(dat))], type_element_array)
+
+            _, type_element_array = nested2recursive(dat[0], o)
+            if type(type_element_array) in [IntType, BoolType, FloatType]:
+                codeGen += self.emit.emitNEWARRAY(type_element_array, frame)
             else:
-                _, type_of_inner_array = nested_recursive(first_element, context)
+                codeGen += self.emit.emitANEWARRAY(type_element_array, frame)
 
-                code_gen += self.emit.emitANEWARRAY(type_of_inner_array, frame)
-
-                for idx, sub_list in enumerate(current_value):
-                    code_gen += self.emit.emitDUP(frame)
-                    code_gen += self.emit.emitPUSHICONST(idx, frame)
-                
-                    sub_array_code, _ = nested_recursive(sub_list, context)
-                    code_gen += sub_array_code
-                    code_gen += self.emit.emitASTORE(type_of_inner_array, frame)
-                
-                final_dimensions = [len(current_value)]
-                final_element_type = None
-
-                if isinstance(type_of_inner_array, ArrayType):
-                    final_dimensions.extend(type_of_inner_array.dimens)
-                    final_element_type = type_of_inner_array.eleType
-                else:
-                    final_element_type = type_of_inner_array 
-                    
-                    
-                return code_gen, ArrayType(final_dimensions, final_element_type)
+            for idx, item in enumerate(dat):
+                codeGen += self.emit.emitDUP(frame)
+                codeGen += self.emit.emitPUSHCONST(idx, IntType(), frame)
+                subArrayCode, _ = nested2recursive(item, o)
+                codeGen += subArrayCode
+                codeGen += self.emit.emitASTORE(type_element_array, frame)
+            
+            if isinstance(type_element_array, ArrayType):
+                new_dimens = [IntLiteral(len(dat))]
+                new_dimens.extend(type_element_array.dimens)
+                return codeGen, ArrayType(new_dimens, type_element_array.eleType)
+            else:
+                return codeGen, ArrayType([IntLiteral(len(dat))], type_element_array)
         
-        return nested_recursive(ast.value, o)
+        if type(ast.value) is ArrayType:
+            return self.visit(ast.value, o)
 
+        return nested2recursive(ast.value, o)
     
     def visitArrayType(self, ast:ArrayType, o):
         codeGen = ""
@@ -579,25 +574,24 @@ class CodeGenerator(BaseVisitor,Utils):
         codeGen += self.emit.emitMULTIANEWARRAY(ast, o['frame'])
         return codeGen, ast
 
-
-    def visitStructType(self, ast, c):
-        structName = ast.name.name
-        emitter = Emitter(f"{structName}.j")
+    def visitStructType(self, ast: StructType, o: dict):
+        struct_name = ast.name
+        self.emit.printout(self.emit.emitPROLOG(struct_name, "java.lang.Object"))
         
-        c.append(emitter)
+        # Emit fields
+        for elem in ast.elements:
+            self.emit.printout(self.emit.emitATTRIBUTE(elem[0], elem[1], False, False, None))
         
-        emitter.printout(emitter.emitPROLOG(structName, "java/lang/Object"))
+        # Default constructor
+        self.emit.printout(self.emit.emitMETHOD("<init>", MType([], VoidType()), False, Frame("<init>", VoidType())))
+        # Constructor with parameters
+        params = [ParamDecl(elem[0], elem[1]) for elem in ast.elements]
+        self.visit(MethodDecl(None, FuncDecl("<init>", params, VoidType(), Block([
+            Assign(FieldAccess(Id("this"), elem[0]), Id(elem[0])) for elem in ast.elements
+        ]))), o)
         
-        for decl in ast.varDecls:
-            emitter.printout(emitter.emitATTRIBUTE(decl.variable.name, self.getJVMType(decl.varType), False))
-        
-        emitter.printout(emitter.emitDEFAULT_CONSTRUCTOR(structName))
-        
-        for method in ast.methods:
-            self.visit(method, c)
-        
-        emitter.printout(emitter.emitEPILOG())
-        c.pop()
+        self.emit.printout(self.emit.emitEPILOG())
+        return o
 
     def visitFieldAccess(self, ast, c):
         frame = c[-1] if isinstance(c[-1], Frame) else c[-2]
