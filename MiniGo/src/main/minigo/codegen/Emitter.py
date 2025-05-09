@@ -15,7 +15,7 @@ class MType:
         self.rettype = rettype
 
     def __str__(self):
-        return "MType([" + ",".join(str(x) for x in self.partype) + "]," + str(self.rettype) + ")"
+        return 'MType([' + ','.join(str(x) for x in self.partype) + '],' + str(self.rettype) + ')'
 
 class Val(ABC):
     pass
@@ -40,7 +40,7 @@ class Symbol:
         self.value = value
 
     def __str__(self):
-        return "Symbol(" + str(self.name) + "," + str(self.mtype) + ("" if self.value is None else "," + str(self.value)) + ")"
+        return 'Symbol(' + str(self.name) + ',' + str(self.mtype) + ('' if self.value is None else ',' + str(self.value)) + ')'
     
 
 class Emitter():
@@ -51,36 +51,36 @@ class Emitter():
 
     def getJVMType(self, inType):
         type_mapping = {
-            IntType: "I",
-            FloatType: "F",
-            BoolType: "Z",
-            StringType: "Ljava/lang/String;",
-            VoidType: "V"
+            IntType: 'I',
+            FloatType: 'F',
+            BoolType: 'Z',
+            StringType: 'Ljava/lang/String;',
+            VoidType: 'V'
         }
         
         typeIn = type(inType)
         if typeIn in type_mapping:
             return type_mapping[typeIn]
         if typeIn is Id:
-            return "L" + inType.name + ";"
+            return 'L' + inType.name + ';'
         if typeIn is MType:
-            return "(" + "".join(map(self.getJVMType, inType.partype)) + ")" + self.getJVMType(inType.rettype)
+            return '(' + ''.join(map(self.getJVMType, inType.partype)) + ')' + self.getJVMType(inType.rettype)
         if typeIn is ArrayType:
             if inType.dimens and len(inType.dimens) > 0:
                 dim = len(inType.dimens)
-                return "[" * dim + self.getJVMType(inType.eleType)
-            return "[" + self.getJVMType(inType.eleType)
+                return '[' * dim + self.getJVMType(inType.eleType)
+            return '[' + self.getJVMType(inType.eleType)
         return str(typeIn)
 
     @staticmethod
     def getFullType(inType):
         typeIn = type(inType)
         if typeIn is IntType:
-            return "int"
+            return 'int'
         if typeIn is codegen.StringType:
-            return "java/lang/String"
+            return 'java/lang/String'
         if typeIn is VoidType:
-            return "void"
+            return 'void'
 
     def emitPUSHICONST(self, in_: Union[int, str], frame: Frame):
         frame.push()
@@ -105,9 +105,9 @@ class Emitter():
             
         if type(in_) is str:
             str_val_lower = in_.lower()
-            if str_val_lower == "true":
+            if str_val_lower == 'true':
                 return self.emitPUSHICONST(1, frame)
-            if str_val_lower == "false":
+            if str_val_lower == 'false':
                 return self.emitPUSHICONST(0, frame)
             
             try:
@@ -118,12 +118,11 @@ class Emitter():
 
         raise IllegalOperandException(f"Unsupported type '{type(in_)}' for PUSHICONST with value '{in_}'.")
 
-
     def emitPUSHFCONST(self, in_: str, frame: Frame):
         value = float(in_)
         frame.push()
         if value in [0.0, 1.0, 2.0]:
-            return self.jvm.emitFCONST("{0:.1f}".format(value))
+            return self.jvm.emitFCONST('{0:.1f}'.format(value))
         return self.jvm.emitLDC(str(value))     
 
     def emitPUSHCONST(self, in_: str, typ: Type, frame: Frame):
@@ -149,9 +148,9 @@ class Emitter():
         raise IllegalOperandException(str(in_))
 
     def emitASTORE(self, in_: Type, frame: Frame):
-        frame.pop() # val
-        frame.pop() # idx
-        frame.pop() # arr ref
+        frame.pop()
+        frame.pop()
+        frame.pop()
         
         if type(in_) is IntType:
             return self.jvm.emitIASTORE()
@@ -167,7 +166,7 @@ class Emitter():
         if isinstance(inType, str):
             typeStr = inType
         elif isinstance(inType, ClassType):
-            typeStr = "L" + inType.cname + ";"
+            typeStr = 'L' + inType.cname + ';'
         else:
             typeStr = self.getJVMType(inType)
         
@@ -205,8 +204,8 @@ class Emitter():
             return self.jvm.emitSTATICFIELD(lexeme, self.getJVMType(in_), isFinal, value)
         
         field_code = self.jvm.emitINSTANCEFIELD(lexeme, self.getJVMType(in_), isFinal, value)
-        if "public" not in field_code:
-            field_code = field_code.replace(".field ", ".field public ")
+        if 'public' not in field_code:
+            field_code = field_code.replace('.field ', '.field public ')
         return field_code
 
     def emitGETSTATIC(self, lexeme: str, in_: Type, frame: Frame):
@@ -263,16 +262,16 @@ class Emitter():
         label_2 = frame.getNewLabel()
         result = []
         result.append(self.emitIFTRUE(label_1, frame))
-        result.append(self.emitPUSHCONST("true", in_, frame))
+        result.append(self.emitPUSHCONST('true', in_, frame))
         result.append(self.emitGOTO(label_2, frame))
         result.append(self.emitLABEL(label_1, frame))
-        result.append(self.emitPUSHCONST("false", in_, frame))
+        result.append(self.emitPUSHCONST('false', in_, frame))
         result.append(self.emitLABEL(label_2, frame))
         return ''.join(result)
 
     def emitADDOP(self, lexeme: str, in_: Type, frame: Frame):
         frame.pop()
-        if lexeme == "+":
+        if lexeme == '+':
             if type(in_) is IntType:
                 return self.jvm.emitIADD()
             return self.jvm.emitFADD()
@@ -282,7 +281,7 @@ class Emitter():
 
     def emitMULOP(self, lexeme: str, in_: Type, frame: Frame):
         frame.pop()
-        if lexeme == "*":
+        if lexeme == '*':
             if type(in_) is IntType:
                 return self.jvm.emitIMUL()
             return self.jvm.emitFMUL()
@@ -296,7 +295,7 @@ class Emitter():
 
     def emitMOD(self, frame: Frame):
         frame.pop()
-        return "\tirem\n"
+        return '\tirem\n'
 
     def emitANDOP(self, frame: Frame):
         frame.pop()
@@ -315,51 +314,51 @@ class Emitter():
         frame.pop()
 
         if type(in_) is IntType:
-            if op == ">":
+            if op == '>':
                 result.append(self.jvm.emitIFICMPLE(false_label))
-            elif op == ">=":
+            elif op == '>=':
                 result.append(self.jvm.emitIFICMPLT(false_label))
-            elif op == "<":
+            elif op == '<':
                 result.append(self.jvm.emitIFICMPGE(false_label))
-            elif op == "<=":
+            elif op == '<=':
                 result.append(self.jvm.emitIFICMPGT(false_label))
-            elif op == "!=":
+            elif op == '!=':
                 result.append(self.jvm.emitIFICMPEQ(false_label))
-            elif op == "==":
+            elif op == '==':
                 result.append(self.jvm.emitIFICMPNE(false_label))
 
         elif type(in_) is FloatType:
-            if op == ">":
+            if op == '>':
                 result.append(self.jvm.emitFCMPL())
                 result.append(self.jvm.emitIFLE(false_label))
-            elif op == ">=":
+            elif op == '>=':
                 result.append(self.jvm.emitFCMPL())
                 result.append(self.jvm.emitIFLT(false_label))
-            elif op == "<":
+            elif op == '<':
                 result.append(self.jvm.emitFCMPL())
                 result.append(self.jvm.emitIFGE(false_label))
-            elif op == "<=":
+            elif op == '<=':
                 result.append(self.jvm.emitFCMPL())
                 result.append(self.jvm.emitIFGT(false_label))
-            elif op == "!=":
+            elif op == '!=':
                 result.append(self.jvm.emitFCMPL())
                 result.append(self.jvm.emitIFEQ(false_label))
-            elif op == "==":
+            elif op == '==':
                 result.append(self.jvm.emitFCMPL())
                 result.append(self.jvm.emitIFNE(false_label))
 
         elif type(in_) is StringType:
-            if op == "==":
+            if op == '==':
                 result.append(self.jvm.emitIFICMPNE(false_label))
-            elif op == "!=":
+            elif op == '!=':
                 result.append(self.jvm.emitIFICMPEQ(false_label))
-            elif op == "<":
+            elif op == '<':
                 result.append(self.jvm.emitIFICMPGE(false_label))
-            elif op == "<=":
+            elif op == '<=':
                 result.append(self.jvm.emitIFICMPGT(false_label))
-            elif op == ">":
+            elif op == '>':
                 result.append(self.jvm.emitIFICMPLE(false_label))
-            elif op == ">=":
+            elif op == '>=':
                 result.append(self.jvm.emitIFICMPLT(false_label))
 
         result.append(self.emitPUSHICONST(1, frame))
@@ -375,18 +374,18 @@ class Emitter():
         frame.pop()
         frame.pop()
 
-        if op == ">":
+        if op == '>':
             result.append(self.jvm.emitIFICMPLE(falseLabel))
             result.append(self.emitGOTO(trueLabel))
-        elif op == ">=":
+        elif op == '>=':
             result.append(self.jvm.emitIFICMPLT(falseLabel))
-        elif op == "<":
+        elif op == '<':
             result.append(self.jvm.emitIFICMPGE(falseLabel))
-        elif op == "<=":
+        elif op == '<=':
             result.append(self.jvm.emitIFICMPGT(falseLabel))
-        elif op == "!=":
+        elif op == '!=':
             result.append(self.jvm.emitIFICMPEQ(falseLabel))
-        elif op == "==":
+        elif op == '==':
             result.append(self.jvm.emitIFICMPNE(falseLabel))
         
         result.append(self.jvm.emitGOTO(trueLabel))
@@ -394,7 +393,7 @@ class Emitter():
 
     def emitMETHOD(self, lexeme, in_, isStatic,abstract = False):
         if abstract:
-            return JasminCode.END + ".method public abstract " + lexeme + self.getJVMType(in_) + JasminCode.END
+            return JasminCode.END + '.method public abstract ' + lexeme + self.getJVMType(in_) + JasminCode.END
         return self.jvm.emitMETHOD(lexeme, self.getJVMType(in_), isStatic)
 
     def emitENDMETHOD(self, frame: Frame):
@@ -457,9 +456,9 @@ class Emitter():
 
     def emitPROLOG(self, name: str, parent: str, interface = False):
         result = []
-        result.append(self.jvm.emitSOURCE(name + ".java"))
+        result.append(self.jvm.emitSOURCE(name + '.java'))
         result.append(self.jvm.emitCLASS(f"public {'interface' if interface else ''} {name}"))
-        result.append(self.jvm.emitSUPER("java/land/Object" if parent == "" else parent))
+        result.append(self.jvm.emitSUPER('java/land/Object' if parent == '' else parent))
         return ''.join(result)
     
     def emitIMPLEMENT(self, name):
@@ -472,10 +471,10 @@ class Emitter():
         return self.jvm.emitLIMITLOCAL(num)
 
     def emitEPILOG(self):
-        file = open(self.filename, "w")
+        file = open(self.filename, 'w')
         file.write(''.join(self.buff))
         file.close()
-        return ""
+        return ''
     
 
     def printout(self, in_: str):
@@ -486,16 +485,16 @@ class Emitter():
 
     def emitNEWARRAY(self, in_: Type, _: Frame):
         if type(in_) is IntType:
-            return self.jvm.emitNEWARRAY("int")
+            return self.jvm.emitNEWARRAY('int')
         if type(in_) is BoolType:
-            return self.jvm.emitNEWARRAY("boolean")
+            return self.jvm.emitNEWARRAY('boolean')
         if type(in_) is FloatType:
-            return self.jvm.emitNEWARRAY("float")
+            return self.jvm.emitNEWARRAY('float')
         raise IllegalOperandException(str(in_))
 
     def emitANEWARRAY(self, in_: Type, _: Frame):        
         if type(in_) is StringType:
-            return self.jvm.emitANEWARRAY("java/lang/String")
+            return self.jvm.emitANEWARRAY('java/lang/String')
         if type(in_) is ArrayType:
             return self.jvm.emitANEWARRAY(self.getJVMType(in_))
         if type(in_) is Id:
