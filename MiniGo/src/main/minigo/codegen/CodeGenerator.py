@@ -179,74 +179,100 @@ class CodeGenerator(BaseVisitor,Utils):
         return self.visit(VarDecl(ast.conName, ast.conType, ast.iniExpr), o)
 
     def visitVarDecl(self, ast: VarDecl, o: dict) -> dict:
-        def create_init(varType: Type, o: dict):
+        def create_init(varType: Type) -> Literal:
             if type(varType) is IntType:
                 return IntLiteral(0)
             elif type(varType) is FloatType:
                 return FloatLiteral(0.0)
             elif type(varType) is StringType:
-                return StringLiteral("\"\"")
+                return StringLiteral("")
             elif type(varType) is BoolType:
-                return BooleanLiteral("false")
-            elif type(varType) is ArrayType:
-                if all(isinstance(d, int) for d in varType.dimens):
-                    zero_val = create_init(varType.eleType, o)
-                    if len(varType.dimens) == 1:
-                        return ArrayLiteral([varType.dimens[0]], varType.eleType, [zero_val] * varType.dimens[0])
-                    
-                return None
+                return BooleanLiteral(False)
+            # Array default initialization handled below, not via recursive create_init for literals
 
         varInit = ast.varInit
         varType = ast.varType
 
-        env = o.copy()
-        temp_frame = Frame("<template_VT>", VoidType())
-        temp_env = {'env': env['env'], 'frame': temp_frame}
+        # If no initializer is provided and a type is specified (and it's not an ArrayType), create a default value for primitive types.
+        # Array default initialization (allocation) is handled later based on varType if no varInit is present.
+        if not varInit and varType and not isinstance(varType, ArrayType):
+            varInit = create_init(varType)
+            ast.varInit = varInit # Update the AST node for later processing if needed
+
+        # Determine the variable's type if not explicitly provided but an initializer exists.
+        inferredType = None
+        if not varType and varInit:
+            # Need to visit varInit to get its type for inference
+            if 'frame' not in o:
+                # Global variable: Visit varInit in a context without a local frame
+                temp_env = {'env': o['env']}
+                _, inferredType = self.visit(varInit, temp_env)
+            else:
+                # Local variable: Visit varInit in the current frame context
+                _, inferredType = self.visit(varInit, o)
+
+        # Use the inferred type if varType was not provided
+        if not varType:
+            varType = inferredType
 
 
+        # Now handle code generation based on whether it's a global or local variable
         if 'frame' not in o:
-            if not varType and varInit:
-                _, varType = self.visit(varInit, temp_env)
-            elif not varType:
-                pass
-
+            # Global variable declaration
+            # Add the symbol to the global scope
             o['env'][0].append(Symbol(ast.varName, varType, CName(self.className)))
-
+            # Emit code for the global attribute (field)
+            self.emit.printout(self.emit.emitATTRIBUTE(ast.varName, varType, True, False, None))
+            # Global variable initialization code (if any) is handled in emitObjectCInit.
         else:
+            # Local variable declaration
             frame = o['frame']
-            if not varType and varInit:
-                _, varType = self.visit(varInit, {'env':o['env'], 'frame': frame})
-            elif not varType:
-                pass
 
-
+            # Get a new index for the local variable
             index = frame.getNewIndex()
+            # Add the symbol to the current local scope
             o['env'][0].append(Symbol(ast.varName, varType, Index(index)))
+            # Emit code to declare the local variable
             self.emit.printout(self.emit.emitVAR(index, ast.varName, varType, frame.getStartLabel(), frame.getEndLabel(), frame))
 
+            # Handle initialization if an initializer is provided or if it's an array type without an initializer
             if varInit:
-                rhsCode, rhsType = self.visit(varInit, {'env':o['env'], 'frame': frame})
+                # Visit the initializer expression to get its code and type
+                rhsCode, rhsType = self.visit(varInit, o)
+                # Handle type conversion if necessary (e.g., Int to Float)
                 if type(varType) is FloatType and type(rhsType) is IntType:
                     rhsCode += self.emit.emitI2F(frame)
+                # Emit the code for the initializer expression
                 self.emit.printout(rhsCode)
+                # Emit code to write the value to the local variable
                 self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame))
 
             elif type(varType) is ArrayType:
+                # Handle array declaration without explicit initialization (allocate the array)
+                # Need to visit dimension expressions and emit array creation code
                 dim_codes = []
+                # Ensure dimens are treated as expressions to be visited
+                # Assuming varType.dimens contains AST nodes for dimensions
                 for dim_expr in varType.dimens:
-                    dim_code, _ = self.visit(dim_expr, {'env':o['env'], 'frame': frame})
+                    # Visit dimension expressions in the current local frame context
+                    dim_code, _ = self.visit(dim_expr, o)
                     dim_codes.append(dim_code)
 
+                # Emit the dimension calculations onto the stack
                 self.emit.printout("".join(dim_codes))
 
+                # Emit code to create the array (single or multi-dimensional)
                 if len(varType.dimens) == 1:
+                    # Emit NEWARRAY for 1D array of primitive or object type
                     self.emit.printout(self.emit.emitNEWARRAY(varType.eleType, frame))
                 else:
+                    # Emit MULTIANEWARRAY for multi-dimensional arrays
                     self.emit.printout(self.emit.emitMULTIANEWARRAY(varType, frame))
 
+                # Emit code to store the new array reference in the local variable
                 self.emit.printout(self.emit.emitWRITEVAR(ast.varName, varType, index, frame))
 
-
+        # Return the modified environment
         return o
     
     def visitFuncCall(self, ast: FuncCall, o: dict) -> dict:
@@ -295,9 +321,18 @@ class CodeGenerator(BaseVisitor,Utils):
             return self.emit.emitGETSTATIC(f"{sym.value.value}/{ast.name}", sym.mtype, o['frame']), sym.mtype
 
     def visitAssign(self, ast: Assign, o: dict) -> dict:
-        if type(ast.lhs) is Id and not next(filter(lambda x: x.name == ast.lhs.name, [j for i in o['env'] for j in i]), None):
-            return self.visit(VarDecl(ast.lhs.name, None, ast.rhs), o)
-        
+        if type(ast.lhs) is Id:
+            sym = None
+            for scope in o['env']:
+                found_sym = next(filter(lambda x: x.name == ast.lhs.name, scope), None)
+                if found_sym:
+                    sym = found_sym
+                    break
+
+            if sym is None:
+                new_var_decl = VarDecl(ast.lhs.name, None, ast.rhs)
+                return self.visit(new_var_decl, o)
+
         rhsCode, rhsType = self.visit(ast.rhs, o)
 
         o['isLeft'] = True
@@ -305,14 +340,16 @@ class CodeGenerator(BaseVisitor,Utils):
         o['isLeft'] = False
 
         if type(lhsType) is FloatType and type(rhsType) is IntType:
-            rhsCode = rhsCode + self.emit.emitI2F(o['frame'])
-        
-        o['frame'].push()
-                    
+            rhsCode += self.emit.emitI2F(o['frame'])
         if type(ast.lhs) is ArrayCell:
             self.emit.printout(lhsCode)
             self.emit.printout(rhsCode)
-            self.emit.printout(self.emit.emitASTORE(self.arrayCell, o['frame']))
+            if self.arrayCell is None:
+                store_type = lhsType.eleType if isinstance(lhsType, ArrayType) else lhsType
+                self.emit.printout(self.emit.emitASTORE(store_type, o['frame']))
+            else:
+                self.emit.printout(self.emit.emitASTORE(self.arrayCell, o['frame']))
+            self.arrayCell = None
         else:
             self.emit.printout(rhsCode)
             self.emit.printout(lhsCode)
