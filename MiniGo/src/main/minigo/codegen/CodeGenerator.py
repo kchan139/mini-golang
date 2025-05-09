@@ -291,19 +291,25 @@ class CodeGenerator(BaseVisitor,Utils):
         # Return the modified environment
         return o
     
-    def visitFuncCall(self, ast: FuncCall, o: dict) -> dict:
+    def visitFuncCall(self, ast, o):
         sym = next(filter(lambda x: x.name == ast.funName, self.list_function), None)
+        
+        if 'frame' not in o:
+            temp_frame = Frame("<clinit>", VoidType())
+            env = o.copy()
+            env['frame'] = temp_frame
+            output = "".join([str(self.visit(x, env)[0]) for x in ast.args])
+            output += self.emit.emitINVOKESTATIC(f'{sym.value.value}/{ast.funName}', sym.mtype, temp_frame)
+            return output, sym.mtype.rettype
+        
         if o.get('stmt'):
-            o["stmt"] = False
-            params_code = "".join([self.visit(x, o)[0] for x in ast.args])
-            self.emit.printout(params_code)      
+            o['stmt'] = False
+            self.emit.printout("".join([str(self.visit(x,o)[0]) for x in ast.args]))
             self.emit.printout(self.emit.emitINVOKESTATIC(f"{sym.value.value}/{ast.funName}", sym.mtype, o['frame']))
-            
             return o
         
-        output = "".join([self.visit(x, o)[0] for x in ast.args])
-        output += self.emit.emitINVOKESTATIC(f"{sym.value.value}/{ast.funName}", sym.mtype, o['frame'])
-
+        output = "".join([str(self.visit(x, o)[0]) for x in ast.args])
+        output += self.emit.emitINVOKESTATIC(f'{sym.value.value}/{ast.funName}', sym.mtype, o['frame'])
         return output, sym.mtype.rettype
 
     def visitBlock(self, ast: Block, o: dict) -> dict:
@@ -336,40 +342,42 @@ class CodeGenerator(BaseVisitor,Utils):
         else:         
             return self.emit.emitGETSTATIC(f"{sym.value.value}/{ast.name}", sym.mtype, o['frame']), sym.mtype
 
-    def visitAssign(self, ast: Assign, o: dict) -> dict:
-        if type(ast.lhs) is Id:
-            sym = None
-            for scope in o['env']:
-                found_sym = next(filter(lambda x: x.name == ast.lhs.name, scope), None)
-                if found_sym:
-                    sym = found_sym
-                    break
-
-            if sym is None:
-                new_var_decl = VarDecl(ast.lhs.name, None, ast.rhs)
-                return self.visit(new_var_decl, o)
-
+    def visitAssign(self, ast, o):
+        if type(ast.lhs) is Id and not next(filter(lambda x: x.name == ast.lhs.name,[j for i in o['env'] for j in i]),None):
+            return self.visitVarDecl(VarDecl(ast.lhs.name, self.visit(ast.rhs,o)[1],ast.rhs),o)
+        
         rhsCode, rhsType = self.visit(ast.rhs, o)
-
         o['isLeft'] = True
         lhsCode, lhsType = self.visit(ast.lhs, o)
         o['isLeft'] = False
 
         if type(lhsType) is FloatType and type(rhsType) is IntType:
             rhsCode += self.emit.emitI2F(o['frame'])
+
         if type(ast.lhs) is ArrayCell:
             self.emit.printout(lhsCode)
             self.emit.printout(rhsCode)
-            if self.arrayCell is None:
+            # Fix: Use the element type instead of the array indices
+            if self.arrayCell is not None:
+                # Need to emit ASTORE with the element type, not with the indices
+                if isinstance(lhsType, ArrayType):
+                    self.emit.printout(self.emit.emitASTORE(lhsType.eleType, o['frame']))
+                else:
+                    self.emit.printout(self.emit.emitASTORE(lhsType, o['frame']))
+            else:
                 store_type = lhsType.eleType if isinstance(lhsType, ArrayType) else lhsType
                 self.emit.printout(self.emit.emitASTORE(store_type, o['frame']))
-            else:
-                self.emit.printout(self.emit.emitASTORE(self.arrayCell, o['frame']))
-            self.arrayCell = None
+        elif type(ast.lhs) is FieldAccess:
+            self.emit.printout(lhsCode)
+            self.emit.printout(rhsCode)
+            struct_name = self.visit(ast.lhs.receiver,o)[1].name
+            self.emit.printout(self.emit.emitPUTFIELD(struct_name + '/' + ast.lhs.field,lhsType,o['frame']))
         else:
             self.emit.printout(rhsCode)
             self.emit.printout(lhsCode)
-
+        
+        # Reset arrayCell after use
+        self.arrayCell = None
         return o
 
     def visitReturn(self, ast: Return, o: dict) -> dict:
