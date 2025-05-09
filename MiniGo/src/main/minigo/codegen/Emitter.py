@@ -392,8 +392,10 @@ class Emitter():
         result.append(self.jvm.emitGOTO(trueLabel))
         return ''.join(result)
 
-    def emitMETHOD(self, lexeme: str, in_: Type, isStatic: bool, _: Frame, isAbstract = False):
-        return self.jvm.emitMETHOD(lexeme, self.getJVMType(in_), isStatic, isAbstract)
+    def emitMETHOD(self, lexeme, in_, isStatic,abstract = False):
+        if abstract:
+            return JasminCode.END + ".method public abstract " + lexeme + self.getJVMType(in_) + JasminCode.END
+        return self.jvm.emitMETHOD(lexeme, self.getJVMType(in_), isStatic)
 
     def emitENDMETHOD(self, frame: Frame):
         buff = []
@@ -459,6 +461,9 @@ class Emitter():
         result.append(self.jvm.emitCLASS(f"public {'interface' if interface else ''} {name}"))
         result.append(self.jvm.emitSUPER("java/land/Object" if parent == "" else parent))
         return ''.join(result)
+    
+    def emitIMPLEMENT(self, name):
+        return '\t' + '.implements ' + name + '\n'
 
     def emitLIMITSTACK(self, num: int):
         return self.jvm.emitLIMITSTACK(num)
