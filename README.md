@@ -2,15 +2,24 @@
 
 A compiler for the MiniGo programming language, implemented in Python using ANTLR for parsing. MiniGo is a simplified version of Go designed for educational purposes.
 
+## Module Evaluation Results
+
+* **Lexer**: 100/100 (100%)
+* **Recognizer**: 87/100 (87%)
+* **AST Generation**: 96/100 (96%)
+* **Static Check**: 107/125 (85.6%)
+* **Code Generation**: Not yet evaluated
+* **Optimization**: Not in course scope
+
+---
+
 ## Project Structure
 
 ```
 └── kchan139-mini-golang/
 ├── MiniGo/
 │   └── src/
-│       ├── main.py           \# Main compiler script
-│       ├── test.sh           \# Test automation script
-│       ├── external/         \# External libraries
+│       ├── main.py               \# Main compiler script
 │       ├── main/
 │       │   └── minigo/
 │       │       ├── astgen/       \# Abstract Syntax Tree generation
@@ -19,12 +28,10 @@ A compiler for the MiniGo programming language, implemented in Python using ANTL
 │       │       ├── parser/       \# Lexer and Parser (ANTLR G4)
 │       │       └── utils/        \# Utility modules (AST nodes, Visitor)
 │       └── test/
-│           ├── \*.py            \# Test suites (Lexer, Parser, AST, Check, CodeGen)
-│           ├── TestUtils.py    \# Test utilities
-│           ├── solutions/      \# Expected test outputs
-│           └── testcases/      \# Test input files
+│           ├── \*.py             \# Test suites (Lexer, Parser, AST, Check, CodeGen)
+│           └── TestUtils.py      \# Test utilities
 └── Specification/
-    └── README.md             \# MiniGo language specification
+    └── MiniGo Spec 1.0.2.pdf     \# MiniGo language specification
 ```
 
 ## Environment Setup
@@ -86,24 +93,7 @@ cd MiniGo/src
 
 ## Testing
 
-### Direct Commands using `main.py`
-
-```bash
-# Generate ANTLR parser files (requires ANTLR_JAR env var)
-python main.py gen
-
-# Run specific test suites
-python main.py test LexerSuite
-python main.py test ParserSuite
-python main.py test ASTGenSuite
-python main.py test CheckSuite
-python main.py test CodeGenSuite
-
-# Clean generated ANTLR files
-python main.py clean
-```
-
-### Using Automation Script (`test.sh`)
+### Using Bash Script (`test.sh`)
 
 ```bash
 # Make the script executable
@@ -119,12 +109,8 @@ chmod +x test.sh
 ./test.sh clean     # Clean test artifacts (input/output files)
 ```
 
-**Note:** The `test.sh` script first runs `python main.py gen`.
+**Note:** The `test.sh` script first runs `python main.py gen` every time.
 
 ## Language Specification
 
 For details about the MiniGo language syntax and semantics, refer to the [Specification README](Specification/README.md).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
