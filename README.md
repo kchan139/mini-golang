@@ -5,7 +5,7 @@ A compiler for the MiniGo programming language, implemented in Python using ANTL
 ## Module Evaluation Results
 
 * **Lexer**: 100/100 (100%)
-* **Recognizer**: 87/100 (87%)
+* **Recognizer**: 98/100 (98%)
 * **AST Generation**: 96/100 (96%)
 * **Static Check**: 107/125 (85.6%)
 * **Code Generation**: Not yet evaluated
