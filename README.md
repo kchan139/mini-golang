@@ -8,8 +8,10 @@ A compiler for the MiniGo programming language, implemented in Python using ANTL
 * **Recognizer**: 98/100 (98%)
 * **AST Generation**: 96/100 (96%)
 * **Static Check**: 107/125 (85.6%)
-* **Code Generation**: Not yet evaluated
+* **Code Generation**: 100/101 (99,01%)
 * **Optimization**: Not in course scope
+
+### Overall: 95.25%
 
 ---
 
@@ -34,34 +36,9 @@ A compiler for the MiniGo programming language, implemented in Python using ANTL
     └── MiniGo Spec 1.0.2.pdf     \# MiniGo language specification
 ```
 
-## Environment Setup
-
-**Required**:
-* Python >= 3.10 (3.12 recommended)
-* Java Development Kit (JDK) (for ANTLR)
-
-### Installation (Native)
-
-#### Windows
-```bash
-python -m venv venv
-.\venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-#### macOS/Linux
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-**Note:** Ensure the `ANTLR_JAR` environment variable is set to the path of the `antlr-4.9.2-complete.jar` file (e.g., `export ANTLR_JAR=/path/to/MiniGo/src/external/antlr-4.9.2-complete.jar`).
-
 ### Installation & Usage (Docker)
 
-You can also build and run the project using Docker and Docker Compose.
+If you are already familiar with Docker, this is the recommended and easier setup method.
 
 1.  **Build the Docker image:**
 
@@ -79,17 +56,33 @@ You can also build and run the project using Docker and Docker Compose.
     cd MiniGo/src
 
     # Now you can run the compiler commands (see Testing section)
-    python main.py gen
     ./test.sh all
     ```
 
-## Running the Compiler
+### Installation (Native)
 
-Navigate to the source directory:
+#### Environment Setup
+
+**Required**:
+* Python >= 3.10 (3.12 recommended)
+* Java Development Kit (JDK) (for ANTLR)
+
+#### Windows
+```bash
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+#### macOS/Linux
 
 ```bash
-cd MiniGo/src
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
+
+**Note:** Ensure the `ANTLR_JAR` environment variable is set to the path of the `antlr-4.9.2-complete.jar` file (e.g., `export ANTLR_JAR=/MiniGo/src/antlr-4.9.2-complete.jar`).
 
 ## Testing
 
@@ -113,4 +106,4 @@ chmod +x test.sh
 
 ## Language Specification
 
-For details about the MiniGo language syntax and semantics, refer to the [Specification README](Specification/README.md).
+For details about the MiniGo language syntax and semantics, refer to the [Specification](Specification).
